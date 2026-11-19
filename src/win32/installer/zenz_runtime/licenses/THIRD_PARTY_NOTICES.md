@@ -8,7 +8,8 @@ This product includes third-party software and model files.
 - Source: Hugging Face
 - Original model file: ggml-model-Q5_K_M.gguf
 - Included file: models/zenz-v3.2-small-Q5_K_M.gguf
-- License: Apache License 2.0
+- Model author: Miwa-Keita
+- License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0), https://creativecommons.org/licenses/by-sa/4.0/ (as stated in the Hugging Face model repository metadata; Mozkey's notice listed Apache License 2.0, ELMO_key follows the CC BY-SA 4.0 terms)
 - Source repository URL: https://huggingface.co/Miwa-Keita/zenz-v3.2-small-gguf
 - Source file URL: https://huggingface.co/Miwa-Keita/zenz-v3.2-small-gguf/blob/main/ggml-model-Q5_K_M.gguf
 - Source commit observed for the model upload: c67e03e

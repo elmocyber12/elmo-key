@@ -46,17 +46,10 @@ notes.
 * Data/license note: upstream lists source-specific license notes including
   Japanese Wikipedia-derived data, Mozc dictionary data, id.def, and source code.
 
-### dic-nico-intersection-pixiv
+### dic-nico-intersection-pixiv (not used in mozc-live)
 
-* Default source: [Niccori250k fork](https://github.com/Niccori250k/dic-nico-intersection-pixiv),
-  at the pinned revision recorded in `tools/dictionary/locks/daily_sources.json`.
-* Original project: [ncaq/dic-nico-intersection-pixiv](https://github.com/ncaq/dic-nico-intersection-pixiv).
-* Used for: nico/pixiv delta dictionary
-* Provenance: the importer verifies the pinned revision, file size, and SHA-256,
-  and records the source details in a generated manifest.
-* License / generated output: both project READMEs state that the source code is
-  MIT-licensed and that the authors do not claim copyright over the generated
-  dictionary output.
+* mozc-live does not build or bundle the nico/pixiv delta dictionary,
+  because the reuse terms of its source data are unclear.
 
 ### mozcdic-ut-personal-names
 

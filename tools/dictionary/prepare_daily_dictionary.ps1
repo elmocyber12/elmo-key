@@ -24,9 +24,8 @@ if (-not $SkipDownload) {
 
     & (Join-Path $RepoRoot "tools\dictionary\import_merge_ut.ps1") @ImportMergeUtArgs
 
-    Write-Host ""
-    Write-Host "Step 2: Import nico/pixiv dictionary..."
-    & (Join-Path $RepoRoot "tools\dictionary\import_nico_pixiv.ps1")
+    # mozc-live: the nico/pixiv dictionary is excluded because the reuse terms of
+    # its source data (Nico Nico / pixiv encyclopedias) are unclear.
 
     Write-Host ""
     Write-Host "Step 2b: Import personal names dictionary..."
@@ -42,10 +41,10 @@ if ($LASTEXITCODE -ne 0) {
     throw "profile_merge_ut.py failed."
 }
 
-Write-Host ""
-Write-Host "Step 4: Convert nico/pixiv delta..."
-python (Join-Path $RepoRoot "tools\dictionary\convert_nico_pixiv.py")
-if ($LASTEXITCODE -ne 0) { throw "convert_nico_pixiv.py failed." }
+# mozc-live: nico/pixiv delta is not generated (see above). Remove a stale file so
+# profile_personal_names.py does not deduplicate against it.
+$NicoPixivDelta = Join-Path $RepoRoot "src\data\dictionary_koyasi\generated\profiled\dic-nico-pixiv-delta.txt"
+if (Test-Path $NicoPixivDelta) { Remove-Item $NicoPixivDelta }
 
 Write-Host ""
 Write-Host "Step 4b: Profile personal names dictionary..."

@@ -43,7 +43,7 @@ REVISION = 100
 # User-facing Mozkey release version.  This is shown in the About dialog and
 # should match the GitHub release tag without the leading "v".
 MOZKEY_RELEASE_VERSION_MAJOR = 1
-MOZKEY_RELEASE_VERSION_MINOR = 1
+MOZKEY_RELEASE_VERSION_MINOR = 0
 MOZKEY_RELEASE_VERSION_PATCH = 0
 
 # macOS bundle and installer versions must advance beyond existing Mozc builds

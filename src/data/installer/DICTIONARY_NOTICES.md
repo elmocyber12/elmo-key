@@ -86,20 +86,12 @@ release source commit. Generated outputs are not tracked in Git by default.
 - Upstream license: Apache License 2.0.
 - Mozkey filters and cost-adjusts these entries for its daily profile.
 
-## Nico Nico Encyclopedia / pixiv Encyclopedia intersection
+## Nico Nico Encyclopedia / pixiv Encyclopedia intersection (not included)
 
-- Imported source: https://github.com/Niccori250k/dic-nico-intersection-pixiv
-- Locked revision: `4d0d8d219d0b9abf34745016e398e762182fce61`
-- Original project: https://github.com/ncaq/dic-nico-intersection-pixiv
-- Source data: words common to Nico Nico Encyclopedia and pixiv Encyclopedia,
-  with readings from Nico Nico Encyclopedia according to the upstream README.
-- Upstream says its **code** is MIT-licensed and its maintainer does not claim
-  copyright over the **generated dictionary**. That statement is **not** a
-  license grant on behalf of the third-party encyclopedia/data owners.
-- Mozkey performs conversion, filtering and cost adjustments.
-- Third-party rights and source-data reuse terms require a separate release
-  determination; do not treat the upstream maintainer's non-assertion as a
-  blanket authorization.
+- ELMO_key does not include the nico/pixiv delta dictionary that Mozkey can
+  build, because the reuse terms of its source data are unclear.
+- The personal names dictionary above is generated without deduplicating
+  against it.
 
 ## Mozkey syntax-guard dictionary
 

@@ -10,8 +10,9 @@ filegroup(
     # Explicit source labels: when daily is selected, a missing file is a
     # build error instead of silently compiling a partial dictionary.
     # These labels are not analyzed when the checked-in sample profile is used.
+    # mozc-live / ELMO_key: dic-nico-pixiv-delta.txt is intentionally excluded
+    # (reuse terms of its source data are unclear).
     srcs = [
-        "generated/profiled/dic-nico-pixiv-delta.txt",
         "generated/profiled/koyasi-syntax-guard.txt",
         "generated/profiled/mozcdic-ut-daily.txt",
         "generated/profiled/mozcdic-ut-personal-names-daily.txt",
