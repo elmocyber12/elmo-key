@@ -893,7 +893,7 @@ bool ConfigDialog::Update() {
   if (zenzDeferredPresentationTimeoutSpinBox->value() < 50) {
     QMessageBox::warning(
         this, windowTitle(),
-        tr("Zenz correction maximum wait must be at least 50 ms."));
+        tr("AI correction maximum wait must be at least 50 ms."));
     zenzDeferredPresentationTimeoutSpinBox->setFocus();
     zenzDeferredPresentationTimeoutSpinBox->selectAll();
     return false;
@@ -1971,7 +1971,7 @@ std::wstring BuildRestoreDefaultImeScript() {
 void ShowZenzFeedbackManagementDialog(QWidget* parent,
                                       const config::Config& current_config) {
   QDialog dialog(parent);
-  dialog.setWindowTitle(QString::fromUtf8("Zenz フィードバック学習データの管理"));
+  dialog.setWindowTitle(QString::fromUtf8("AI フィードバック学習データの管理"));
   dialog.resize(760, 440);
 
   session::ZenzFeedbackStore store;
@@ -1997,9 +1997,9 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
 
   QLabel* description_label = new QLabel(
       QString::fromUtf8(
-          "Zenz 補正の採用・却下・手動ブロックの記録を管理します。"
+          "AI 補正の採用・却下・手動ブロックの記録を管理します。"
           "記録は次回以降の候補順位や自動ブロックの判定に使われます。"
-          "Mozc の通常変換履歴とは別に保存されています。"),
+          "通常の変換履歴とは別に保存されています。"),
       &dialog);
   description_label->setWordWrap(true);
 
@@ -2019,9 +2019,9 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
                          &dialog, dialog.windowTitle(),
                          QString::fromUtf8(
                              "【この画面で扱うデータ】\n"
-                             "この画面で扱うのは、Zenz が検証・採用ポリシーを通過した"
+                             "この画面で扱うのは、AI が検証・採用ポリシーを通過した"
                              "読み全体、補正後の候補、文脈クラス、採用/却下の記録です。"
-                             "表示された Zenz 補正だけでなく、自動ブロック中に内部で"
+                             "表示された AI 補正だけでなく、自動ブロック中に内部で"
                              "生成された同じ補正も、最終確定との比較対象になります。\n\n"
                              "フィードバック学習データは full-sequence 単位です。"
                              "単語や文節ごとの学習ではなく、同じ読み全体、同じ文脈クラス、"
@@ -2030,47 +2030,47 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
                              "mixed_japanese_ascii / sensitive_like などの"
                              "非可逆な文脈クラスだけを保存します。\n\n"
                              "【いつ採用として記録されるか】\n"
-                             "Zenz 補正が表示され、その補正結果を Enter や"
+                             "AI 補正が表示され、その補正結果を Enter や"
                              "句読点・記号の単打確定などでそのまま確定した場合、"
                              "採用候補として一時保留されます。"
                              "その後、次の実テキスト入力までに Backspace / Escape / "
                              "Revert / Undo などで取り消されなかった場合だけ、"
                              "採用として保存されます。"
-                             "また、表示された Zenz 補正を通常変換へ戻した後、または"
-                             "自動ブロック中の hidden Zenz 補正に対して、同じ読み全体を"
+                             "また、表示された AI 補正を通常変換へ戻した後、または"
+                             "自動ブロック中の hidden AI 補正に対して、同じ読み全体を"
                              "最終的に同じ値で確定した場合も採用として記録されます。"
-                             "hidden match は Zenz feedback の統計だけを更新し、通常 Mozc "
+                             "hidden match は AI feedback の統計だけを更新し、通常の"
                              "履歴への追加学習は行いません。\n\n"
                              "【いつ却下として記録されるか】\n"
-                             "Zenz 補正が表示された後に Space や候補移動などで"
-                             "通常変換へ戻り、最終的に Zenz 補正とは異なる値で"
-                             "確定された場合、その Zenz 補正は却下として保存されます。"
-                             "自動ブロック中も、hidden Zenz 補正と同じ読み全体を"
+                             "AI 補正が表示された後に Space や候補移動などで"
+                             "通常変換へ戻り、最終的に AI 補正とは異なる値で"
+                             "確定された場合、その AI 補正は却下として保存されます。"
+                             "自動ブロック中も、hidden AI 補正と同じ読み全体を"
                              "異なる値で確定した場合は却下として記録されます。"
                              "これは通常候補を削除する命令ではなく、次回以降の"
                              "候補順位や自動ブロック判定を調整するための"
                              "弱いマイナス信号です。\n\n"
                              "【記録されない操作】\n"
-                             "対応する visible / hidden Zenz 観測がない通常変換、通常候補の"
+                             "対応する visible / hidden AI 観測がない通常変換、通常候補の"
                              "選択、通常変換の確定は、この画面のフィードバック学習スコアには"
-                             "影響しません。hidden Zenz の読みより入力が伸びた場合も、"
+                             "影響しません。hidden AI の読みより入力が伸びた場合も、"
                              "別の full-sequence として扱い、その古い観測は数えません。"
-                             "また、Zenz が通常 Mozc と同じ値を返した場合、"
+                             "また、AI が通常の変換と同じ値を返した場合、"
                              "出力検証や採用ポリシーで不採用になった場合、"
                              "password / privacy gate で止められた場合も、"
-                             "表示済み Zenz 補正としては扱われません。\n\n"
+                             "表示済み AI 補正としては扱われません。\n\n"
                              "【状態ラベルの意味】\n"
                              "優先スコアあり: 採用・却下を重み付きで見た結果、"
-                             "この Zenz 補正を優先候補や保存済み feedback による即時補正として"
+                             "この AI 補正を優先候補や保存済み feedback による即時補正として"
                              "再利用できる状態です。\n"
                              "却下スコアあり: 却下履歴により順位を下げる信号があります。"
                              "ただし、手動ブロックや自動ブロックではありません。\n"
                              "却下数優勢: 同じ読み全体・同じ文脈クラス・同じ補正結果で、"
                              "通常却下回数が採用回数を上回っています。"
-                             "この場合、auto-block が OFF でも、Zenz feedback による"
+                             "この場合、auto-block が OFF でも、AI feedback による"
                              "優先候補や保存済み feedback による即時補正としては使いません。"
-                             "ただし hard block ではないため、Zenz が新しく同じ補正を"
-                             "返すこと自体や、通常 Mozc 候補を消すことはありません。\n"
+                             "ただし hard block ではないため、AI が新しく同じ補正を"
+                             "返すこと自体や、通常の候補を消すことはありません。\n"
                              "自動ブロック中: auto-block が ON で、同じ exact 文脈クラスの"
                              "通常却下回数が最低拒否回数以上、かつ拒否割合が最低拒否割合以上"
                              "です。拒否割合は 通常却下 / (採用 + 通常却下) で計算します。"
@@ -2087,10 +2087,10 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
                              "手動ブロックだけは文字数に関係なく有効です。"
                              "対象外かどうかは現在の設定から動的に決まります。\n\n"
                              "【通常の変換履歴との違い】\n"
-                             "Zenz の結果を確定した場合、条件によっては通常の変換履歴にも"
-                             "反映されます。また、安全に判断できる場合は、直前の通常 Mozc "
+                             "AI の結果を確定した場合、条件によっては通常の変換履歴にも"
+                             "反映されます。また、安全に判断できる場合は、直前の通常の"
                              "ライブ変換文節列へ逆投影し、文節列全体を通常変換履歴に近い形で"
-                             "反映します。このとき、Zenz が実際に直した文節だけを"
+                             "反映します。このとき、AI が実際に直した文節だけを"
                              "強い選択履歴として扱います。\n\n"
                              "そのため、この画面でフィードバック学習データを削除しても、"
                              "通常の変換履歴にすでに反映された内容は削除されません。"
@@ -2135,7 +2135,7 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
   QPushButton* block_button =
       new QPushButton(QString::fromUtf8("この補正をブロック"), &dialog);
   block_button->setToolTip(QString::fromUtf8(
-      "選択した Zenz 補正を今後の補正や候補順位に使われにくくします"));
+      "選択した AI 補正を今後の補正や候補順位に使われにくくします"));
   QPushButton* delete_button =
       new QPushButton(QString::fromUtf8("選択項目を削除"), &dialog);
   QPushButton* clear_button =
@@ -2178,7 +2178,7 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
       block_button->setText(QString::fromUtf8("この補正をブロック"));
       block_button->setEnabled(false);
       block_button->setToolTip(QString::fromUtf8(
-          "選択した Zenz 補正を今後の補正や候補順位に使われにくくします"));
+          "選択した AI 補正を今後の補正や候補順位に使われにくくします"));
       return;
     }
 
@@ -2186,7 +2186,7 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
       block_button->setText(QString::fromUtf8("ブロック済み"));
       block_button->setEnabled(false);
       block_button->setToolTip(QString::fromUtf8(
-          "この Zenz 補正はすでにブロックされています。"
+          "この AI 補正はすでにブロックされています。"
           "解除する場合は「選択項目を削除」を使用します"));
       return;
     }
@@ -2194,7 +2194,7 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
     block_button->setText(QString::fromUtf8("この補正をブロック"));
     block_button->setEnabled(true);
     block_button->setToolTip(QString::fromUtf8(
-        "選択した Zenz 補正を今後の補正や候補順位に使われにくくします"));
+        "選択した AI 補正を今後の補正や候補順位に使われにくくします"));
   };
 
   auto reload_table = [&]() {
@@ -2412,10 +2412,10 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
                      message_box.setWindowTitle(dialog.windowTitle());
                      message_box.setIcon(QMessageBox::Warning);
                      message_box.setText(
-                         QString::fromUtf8("選択した Zenz 補正をブロックしますか？"));
+                         QString::fromUtf8("選択した AI 補正をブロックしますか？"));
                      message_box.setInformativeText(
                          QString::fromUtf8(
-                             "同じ読みと候補の組み合わせは、今後の Zenz 補正や"
+                             "同じ読みと候補の組み合わせは、今後の AI 補正や"
                              "候補順位に使われにくくなります。\n\n"
                              "解除したい場合は、この学習エントリを削除してから"
                              "必要に応じて再学習してください。\n\n"
@@ -2443,7 +2443,7 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
                        ShowJapaneseCritical(
                            &dialog, dialog.windowTitle(),
                            QString::fromUtf8(
-                               "Zenz 補正のブロックを保存できませんでした。"));
+                               "AI 補正のブロックを保存できませんでした。"));
                        return;
                      }
 
@@ -2452,7 +2452,7 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
                      ShowJapaneseInformation(
                          &dialog, dialog.windowTitle(),
                          QString::fromUtf8(
-                             "選択した Zenz 補正をブロックしました。"));
+                             "選択した AI 補正をブロックしました。"));
                    });
 
   QObject::connect(delete_button, &QPushButton::clicked,
@@ -2525,7 +2525,7 @@ void ShowZenzFeedbackManagementDialog(QWidget* parent,
                      message_box.setInformativeText(
                          QString::fromUtf8(
                              "この操作は元に戻せません。\n"
-                             "Mozc の通常変換履歴に追加学習した内容は削除されません。"));
+                             "通常の変換履歴に追加学習した内容は削除されません。"));
 
                      QPushButton* clear_confirm_button =
                          message_box.addButton(QString::fromUtf8("すべて削除"),
@@ -7839,12 +7839,12 @@ void ConfigDialog::ClearUserHistory() {
   if (QMessageBox::Ok !=
       QMessageBox::question(
           this, windowTitle(),
-          tr("This operation clears Mozc conversion learning, including "
-             "learning reflected from accepted Zenz results. Input history "
-             "data and Zenz learning data itself are not cleared. To remove "
+          tr("This operation clears normal conversion learning, including "
+             "learning reflected from accepted AI results. Input history "
+             "data and AI learning data itself are not cleared. To remove "
              "input history data, use \"Suggestion\" -> \"Clear all history\". "
-             "To manage Zenz learning data, use "
-             "\"Advanced\" -> \"Zenz Learning\". Do you want to continue?"),
+             "To manage AI learning data, use "
+             "\"Advanced\" -> \"AI Learning\". Do you want to continue?"),
           QMessageBox::Ok | QMessageBox::Cancel, QMessageBox::Cancel)) {
     return;
   }

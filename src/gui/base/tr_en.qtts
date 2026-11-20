@@ -10,7 +10,7 @@
     </message>
     <message>
         <location filename="util.cc" line="23"/>
-        <source>Mozc</source>
+        <source>ELMO_key</source>
         <translation></translation>
     </message>
     <message>

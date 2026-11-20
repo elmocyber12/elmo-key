@@ -146,7 +146,7 @@ CommandSequenceEditorDialog::CommandSequenceEditorDialog(
                                         "Invalid command sequence"),
             QCoreApplication::translate(
                 "mozc::gui::KeyMapEditorDialog",
-                "Return to Mozc conversion or blocking Zenz must be used alone."));
+                "Return to normal conversion or blocking AI must be used alone."));
         return;
       }
       if ((i == 0 && raw.startsWith(QStringLiteral("Delay("))) ||
@@ -159,7 +159,7 @@ CommandSequenceEditorDialog::CommandSequenceEditorDialog(
                                         "Invalid command sequence"),
             QCoreApplication::translate(
                 "mozc::gui::KeyMapEditorDialog",
-                "Delay cannot be first; manual Zenz correction must be last."));
+                "Delay cannot be first; manual AI correction must be last."));
         return;
       }
     }

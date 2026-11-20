@@ -172,7 +172,7 @@ void FillSyntheticCandidate(const converter::Candidate& base_candidate,
       converter::Attribute::RERANKED |
       converter::Attribute::USER_SEGMENT_HISTORY_REWRITER;
 
-  candidate->description = "Zenz 学習";
+  candidate->description = "AI 学習";
   candidate->a11y_description.clear();
   candidate->display_value.clear();
 }

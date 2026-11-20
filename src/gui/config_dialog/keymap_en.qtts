@@ -9,7 +9,7 @@
     </message>
     <message>
         <source>ZenzConversion</source>
-        <translation>Zenz correction</translation>
+        <translation>AI correction</translation>
     </message>
     <message>
         <source>Conversion</source>
@@ -269,27 +269,27 @@
     </message>
     <message>
         <source>RevertZenzToMozc</source>
-        <translation>Return to ordinary Mozc conversion</translation>
+        <translation>Return to ordinary ELMO_key conversion</translation>
     </message>
     <message>
         <source>BlockVisibleZenzCorrection</source>
-        <translation>Block visible Zenz correction</translation>
+        <translation>Block visible AI correction</translation>
     </message>
     <message>
-        <source>Return to Mozc conversion must be used alone.</source>
-        <translation>Return to Mozc conversion must be used alone.</translation>
+        <source>Return to normal conversion must be used alone.</source>
+        <translation>Return to normal conversion must be used alone.</translation>
     </message>
     <message>
-        <source>Return to Mozc conversion or blocking Zenz must be used alone.</source>
-        <translation>Returning to Mozc conversion or blocking Zenz must be used alone.</translation>
+        <source>Return to normal conversion or blocking AI must be used alone.</source>
+        <translation>Returning to ELMO_key conversion or blocking AI must be used alone.</translation>
     </message>
     <message>
         <source>ForceZenzLiveCorrection</source>
-        <translation>Run Zenz correction on uncommitted text</translation>
+        <translation>Run AI correction on uncommitted text</translation>
     </message>
     <message>
         <source>ForceZenzLiveCorrectionWithoutFeedback</source>
-        <translation>Run Zenz correction on uncommitted text (ignore feedback learning)</translation>
+        <translation>Run AI correction on uncommitted text (ignore feedback learning)</translation>
     </message>
     <message>
         <source>Delay</source>
@@ -308,8 +308,8 @@
         <translation>Invalid command sequence</translation>
     </message>
     <message>
-        <source>Delay cannot be first; manual Zenz correction must be last.</source>
-        <translation>Delay cannot be first; manual Zenz correction must be last.</translation>
+        <source>Delay cannot be first; manual AI correction must be last.</source>
+        <translation>Delay cannot be first; manual AI correction must be last.</translation>
     </message>
 </context>
 </TS>
