@@ -300,6 +300,24 @@ bool MaybeMigrateMozkeyCustomKeymap(Config* config) {
 // newer fields, and "Reset to defaults" all resolve to the same values without
 // overwriting explicit user choices.
 void ApplyMozkeyProductDefaults(Config* config) {
+  // ELMO_key: use the ELMO 文教版 custom palettes (see the defaults in
+  // protocol/config.proto) unless the user picked a theme.
+  if (!config->has_candidate_window_color_theme() &&
+      !config->has_use_dark_mode_candidate_window()) {
+    config->set_candidate_window_color_theme(
+        Config::RENDERER_WINDOW_COLOR_CUSTOM);
+  }
+  if (!config->has_suggest_window_color_theme()) {
+    config->set_suggest_window_color_theme(
+        Config::RENDERER_WINDOW_COLOR_CUSTOM);
+  }
+  if (!config->has_ruby_window_color_theme()) {
+    config->set_ruby_window_color_theme(Config::RENDERER_WINDOW_COLOR_CUSTOM);
+  }
+  if (!config->has_windows_mode_indicator_theme()) {
+    config->set_windows_mode_indicator_theme(
+        Config::WINDOWS_MODE_INDICATOR_THEME_CUSTOM);
+  }
   if (!config->has_use_live_conversion()) {
     config->set_use_live_conversion(true);
   }

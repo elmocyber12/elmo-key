@@ -533,20 +533,20 @@ message Config {
 
   message WindowsModeIndicatorCustomStyle {
     // Color values are stored as 0xRRGGBB, not Windows COLORREF.
-    optional uint32 ascii_background_color = 1 [default = 0xf5f8fc];
-    optional uint32 ascii_border_color = 2 [default = 0x5c7491];
-    optional uint32 ascii_text_color = 3 [default = 0x1c2634];
-    optional uint32 ascii_shadow_color = 4 [default = 0x788291];
+    optional uint32 ascii_background_color = 1 [default = 0xffffff];
+    optional uint32 ascii_border_color = 2 [default = 0x000000];
+    optional uint32 ascii_text_color = 3 [default = 0x000000];
+    optional uint32 ascii_shadow_color = 4 [default = 0x000000];
 
-    optional uint32 hiragana_background_color = 5 [default = 0xebfcf8];
-    optional uint32 hiragana_border_color = 6 [default = 0x24968c];
-    optional uint32 hiragana_text_color = 7 [default = 0x124e48];
-    optional uint32 hiragana_shadow_color = 8 [default = 0x69918a];
+    optional uint32 hiragana_background_color = 5 [default = 0xe5004f];
+    optional uint32 hiragana_border_color = 6 [default = 0x000000];
+    optional uint32 hiragana_text_color = 7 [default = 0xffffff];
+    optional uint32 hiragana_shadow_color = 8 [default = 0x000000];
 
-    optional uint32 katakana_background_color = 9 [default = 0xf4f4ff];
-    optional uint32 katakana_border_color = 10 [default = 0x626cd7];
-    optional uint32 katakana_text_color = 11 [default = 0x303469];
-    optional uint32 katakana_shadow_color = 12 [default = 0x78789b];
+    optional uint32 katakana_background_color = 9 [default = 0x5db6e7];
+    optional uint32 katakana_border_color = 10 [default = 0x000000];
+    optional uint32 katakana_text_color = 11 [default = 0xffffff];
+    optional uint32 katakana_shadow_color = 12 [default = 0x000000];
 
     // Geometry values are logical pixels at 96 DPI unless otherwise noted.
     optional uint32 width = 13 [default = 36];
@@ -593,7 +593,7 @@ message Config {
   optional bool use_custom_zenz_live_correction_underline_color = 1037
       [default = true];
   optional uint32 zenz_live_correction_underline_color = 1038
-      [default = 0xc4dc6c];
+      [default = 0xe5004f];
 
   // Customize preedit display attributes on Windows TSF.
   // Color values are stored as 0xRRGGBB, not Windows COLORREF.
@@ -639,24 +639,24 @@ message Config {
     // Color values are stored as 0xRRGGBB, not Windows COLORREF.
     optional uint32 background_color = 1 [default = 0xffffff];
     optional uint32 text_color = 2 [default = 0x000000];
-    optional uint32 selected_background_color = 3 [default = 0xd1eaff];
-    optional uint32 selected_border_color = 4 [default = 0x7facdd];
-    optional uint32 border_color = 5 [default = 0x969696];
-    optional uint32 shortcut_text_color = 6 [default = 0x777777];
-    optional uint32 shortcut_background_color = 7 [default = 0xf3f4ff];
-    optional uint32 description_text_color = 8 [default = 0x888888];
-    optional uint32 footer_text_color = 9 [default = 0x4c4c4c];
+    optional uint32 selected_background_color = 3 [default = 0xe85382];
+    optional uint32 selected_border_color = 4 [default = 0xe5004f];
+    optional uint32 border_color = 5 [default = 0x000000];
+    optional uint32 shortcut_text_color = 6 [default = 0x000000];
+    optional uint32 shortcut_background_color = 7 [default = 0xffffff];
+    optional uint32 description_text_color = 8 [default = 0x000000];
+    optional uint32 footer_text_color = 9 [default = 0x000000];
     optional uint32 footer_background_color = 10 [default = 0xffffff];
-    optional uint32 footer_border_color = 11 [default = 0x606060];
-    optional uint32 scrollbar_background_color = 12 [default = 0xe0e0e0];
-    optional uint32 scrollbar_indicator_color = 13 [default = 0x7590b8];
+    optional uint32 footer_border_color = 11 [default = 0x000000];
+    optional uint32 scrollbar_background_color = 12 [default = 0xe7ecef];
+    optional uint32 scrollbar_indicator_color = 13 [default = 0xe5004f];
   }
 
   message RubyWindowColorPalette {
     // Color values are stored as 0xRRGGBB, not Windows COLORREF.
     optional uint32 background_color = 1 [default = 0xffffff];
     optional uint32 text_color = 2 [default = 0x000000];
-    optional uint32 border_color = 3 [default = 0x969696];
+    optional uint32 border_color = 3 [default = 0x000000];
   }
 
   // Candidate, prediction/suggestion, and ruby window appearance on desktop
@@ -679,9 +679,9 @@ message Config {
   optional RubyWindowColorPalette ruby_window_custom_color_palette = 141;
 
   // Window corner radius. 0 means square corners.
-  optional uint32 candidate_window_custom_corner_radius = 142 [default = 6];
-  optional uint32 suggest_window_custom_corner_radius = 143 [default = 6];
-  optional uint32 ruby_window_custom_corner_radius = 144 [default = 9];
+  optional uint32 candidate_window_custom_corner_radius = 142 [default = 8];
+  optional uint32 suggest_window_custom_corner_radius = 143 [default = 8];
+  optional uint32 ruby_window_custom_corner_radius = 144 [default = 8];
 
   // Candidate-like and ruby window size. 100 means the current default size.
   optional uint32 candidate_window_size_percent = 145 [default = 100];
@@ -790,18 +790,18 @@ message Config {
         [default = CONVERSION_STATUS_AUTO];
     // Colors are 0xRRGGBB. "Pending" describes the asynchronous operation,
     // not necessarily the provenance of the visible preedit.
-    optional uint32 mozc_color = 4 [default = 0x586b85];
-    optional uint32 zenz_pending_color = 5 [default = 0x847438];
-    optional uint32 zenz_color = 6 [default = 0x338d85];
-    optional uint32 reading_color = 7 [default = 0x747d8c];
+    optional uint32 mozc_color = 4 [default = 0xe5004f];
+    optional uint32 zenz_pending_color = 5 [default = 0xf29600];
+    optional uint32 zenz_color = 6 [default = 0x60c0bd];
+    optional uint32 reading_color = 7 [default = 0x53636b];
     optional uint32 text_color = 8 [default = 0xffffff];
-    optional uint32 border_color = 9 [default = 0x354357];
+    optional uint32 border_color = 9 [default = 0x000000];
     optional uint32 width = 10 [default = 56];
     optional uint32 height = 11 [default = 22];
     optional uint32 font_size = 12 [default = 11];
     optional uint32 corner_radius = 13 [default = 7];
-    optional uint32 border_width = 14 [default = 0];
-    optional uint32 opacity_percent = 15 [default = 93];
+    optional uint32 border_width = 14 [default = 1];
+    optional uint32 opacity_percent = 15 [default = 100];
     optional uint32 shadow_size = 16 [default = 3];
     optional uint32 shadow_opacity_percent = 17 [default = 12];
     optional uint32 shadow_angle_degrees = 18 [default = 45];

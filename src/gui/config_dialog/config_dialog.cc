@@ -1144,7 +1144,7 @@ constexpr uint32_t kDefaultTargetPreeditUnderlineColor = 0xc1a5ab;
 
 constexpr uint32_t kDefaultZenzPreeditTextColor = 0x000000;
 constexpr uint32_t kDefaultZenzPreeditBackgroundColor = 0xddeeff;
-constexpr uint32_t kDefaultZenzPreeditUnderlineColor = 0xc4dc6c;
+constexpr uint32_t kDefaultZenzPreeditUnderlineColor = 0xe5004f;
 
 const config::Config::WindowsModeIndicatorCustomStyle&
 GetDefaultModeIndicatorCustomStyle() {
@@ -4832,12 +4832,12 @@ void ConfigDialog::InitializeRendererAppearanceControls() {
   auto* colors = make_section(StatusUiText("Status colors", "状態別の色"));
   const struct { const char* english; const char* japanese;
                  const char* id; uint32_t rgb; } color_items[] = {
-      {"ELMO_key", "ELMO_key", "conversionStatusMozcColorButton", 0x586b85},
-      {"AI processing", "AI 処理中", "conversionStatusPendingColorButton", 0x847438},
-      {"AI applied", "AI 適用済み", "conversionStatusZenzColorButton", 0x338d85},
-      {"Reading", "入力中", "conversionStatusReadingColorButton", 0x747d8c},
+      {"ELMO_key", "ELMO_key", "conversionStatusMozcColorButton", 0xe5004f},
+      {"AI processing", "AI 処理中", "conversionStatusPendingColorButton", 0xf29600},
+      {"AI applied", "AI 適用済み", "conversionStatusZenzColorButton", 0x60c0bd},
+      {"Reading", "入力中", "conversionStatusReadingColorButton", 0x53636b},
       {"Text", "文字", "conversionStatusTextColorButton", 0xffffff},
-      {"Border", "枠線", "conversionStatusBorderColorButton", 0x354357},
+      {"Border", "枠線", "conversionStatusBorderColorButton", 0x000000},
   };
   for (int i = 0; i < 6; ++i) {
     const int row = i / 2;
