@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>予測変換AI ELMO_key（エルモキー）</title>
+<meta name="description" content="打つそばから漢字に。PC の中の AI が文脈を見て変換を整える、無料の日本語入力ソフトです。">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* デザイン：ELMO 文教版（ELMO UI Lab design/system.json v1.0.0）のトークンだけを使う */
+  :root {
+    /* 色 */
+    --brand: #E85382;
+    --primary: #E5004F;
+    --primary-fill: #E5004F;
+    --primary-text: #FFFFFF;
+    --primary-hover-border: #E5004F;
+    --secondary-button-text: #E5004F;
+    --secondary-button-border: #E5004F;
+    --accent: #F29600;
+    --highlight: #FCCF00;
+    --sky: #5DB6E7;
+    --mint: #60C0BD;
+    --canvas: #FFFFFF;
+    --surface: #FFFFFF;
+    --ink: #000000;
+    --muted: #000000;
+    --line: #000000;
+    --control-border: #000000;
+    --focus: #000000;
+    --warning-bg: #FCCF00;
+    --info-bg: #5DB6E7;
+    --success-bg: #A7D081;
+    --band-fill: #E5004F;
+    --disabled-fill: #E7ECEF;
+    --disabled-border: #C4CFD4;
+    --disabled-text: #53636B;
+    --skeleton-fill: #EEEEEE;
+    --feature-background: linear-gradient(135deg, #E85382 0%, #E5004F 24%, #E50012 52%, #F29600 76%, #FCCF00 100%);
+
+    /* 書体 */
+    --font-display: "Zen Maru Gothic", "Noto Sans JP", "Yu Gothic UI", sans-serif;
+    --font-body: "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif;
+    --font-numeric: "Inter", "Noto Sans JP", sans-serif;
+
+    /* 角丸 */
+    --radius-control: 8px;
+    --radius-panel: 16px;
+    --radius-tag: 999px;
+
+    /* 動き */
+    --t-instant: 100ms;
+    --t-fast: 160ms;
+    --t-base: 240ms;
+    --ease-standard: cubic-bezier(.2, 0, 0, 1);
+  }
+
+  /* 文字組みの尺度（9段階） */
+  .el-hero    { font-family: var(--font-display); font-size: clamp(44px, 6.4vw, 104px); line-height: 1.08; letter-spacing: -0.03em; font-weight: 900; }
+  .el-display { font-family: var(--font-display); font-size: clamp(32px, 4.2vw, 64px); line-height: 1.15; letter-spacing: -0.02em; font-weight: 800; }
+  .el-title   { font-family: var(--font-display); font-size: clamp(22px, 2.2vw, 32px); line-height: 1.35; letter-spacing: -0.01em; font-weight: 700; }
+  .el-lead    { font-family: var(--font-body); font-size: clamp(17px, 1.35vw, 21px); line-height: 1.85; letter-spacing: 0.01em; font-weight: 500; }
+  .el-label   { font-family: var(--font-body); font-size: 14px; line-height: 1.6; letter-spacing: 0.02em; font-weight: 600; }
+  .el-caption { font-family: var(--font-body); font-size: 13px; line-height: 1.7; letter-spacing: 0.04em; font-weight: 500; }
+  .el-small   { font-family: var(--font-body); font-size: 12px; line-height: 1.6; letter-spacing: 0.06em; font-weight: 600; }
+  .el-numeral { font-family: var(--font-numeric); font-size: clamp(56px, 8vw, 128px); line-height: 1; letter-spacing: -0.04em; font-weight: 800; }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  [id] { scroll-margin-top: 80px; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px; line-height: 1.9; letter-spacing: 0.02em; font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, p { margin: 0; }
+  a { color: var(--primary); font-weight: 600; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .phrase { display: inline-block; } /* 見出しを文節で折る */
+  .prose { max-width: 40em; }
+
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 80px; }
+
+  .el-icon { width: 1.2em; height: 1.2em; flex: none; vertical-align: -0.2em; }
+  .visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+
+  .skip-link { position: absolute; left: 16px; top: -64px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 8px 16px; z-index: 20; }
+  .skip-link:focus { top: 8px; }
+
+  /* ヘッダー */
+  .site-header { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 64px; }
+  .app-name { color: var(--ink); text-decoration: none; font-weight: 700; white-space: nowrap; }
+  .app-name .el-caption { margin-left: 8px; }
+  .site-nav { display: flex; gap: 24px; }
+  .site-nav a { color: var(--ink); font-weight: 600; text-decoration: none; padding: 12px 0; }
+  .site-nav a:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+
+  /* ボタン */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: 48px; padding: 12px 24px; border-radius: var(--radius-control);
+    text-decoration: none; cursor: pointer;
+    transition: box-shadow var(--t-fast) var(--ease-standard), transform var(--t-instant) var(--ease-standard);
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary { background: var(--primary-fill); color: var(--primary-text); border: 1px solid var(--primary-fill); }
+  .btn-secondary { background: var(--surface); color: var(--secondary-button-text); border: 1px solid var(--secondary-button-border); }
+  @media (hover: hover) {
+    .btn-primary:hover { box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px var(--primary-hover-border); }
+    .btn-secondary:hover { box-shadow: inset 0 0 0 1px var(--secondary-button-border); }
+  }
+  .btn-large { min-height: 64px; padding: 16px 32px; }
+  .btn[aria-disabled="true"] { background: var(--disabled-fill); border-color: var(--disabled-border); color: var(--disabled-text); pointer-events: none; box-shadow: none; }
+
+  /* 通知 */
+  .notice { display: flex; gap: 12px; align-items: flex-start; border-radius: var(--radius-panel); padding: 16px; color: var(--ink); }
+  .notice .el-icon { margin-top: 4px; }
+  .notice--warning { background: var(--warning-bg); }
+  .notice--info { background: var(--info-bg); }
+  .notice a { color: var(--ink); }
+  .notice strong { font-weight: 700; }
+
+  /* ファーストビュー */
+  .hero { background: var(--feature-background); padding: 64px 0; }
+  .hero-panel {
+    background: var(--surface); border-radius: var(--radius-panel);
+    display: grid; grid-template-columns: 7fr 5fr; gap: 48px; align-items: start;
+    padding: 64px; min-height: min(85vh, 760px);
+  }
+  .hero-head { grid-column: 1 / -1; display: grid; gap: 16px; }
+  .hero-copy { display: grid; gap: 24px; justify-items: start; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+  /* 見出し：ライブ変換を見出しそのもので見せる */
+  .hero-title { font-feature-settings: "palt" 1; }
+  .hero-title .line { display: block; padding-top: 0.32em; }
+  .hero-title .line + .line { padding-top: 0.08em; } /* 2行目はふりがながないので詰める */
+  .hero-title.is-pending [aria-hidden="true"] { visibility: hidden; }
+  .ime-seg {
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.06em;
+    text-underline-offset: 0.14em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--t-base) var(--ease-standard);
+  }
+  .ime-seg.is-preedit { text-decoration-style: dotted; text-decoration-color: var(--ink); }
+  .ime-seg.is-converted { text-decoration-style: solid; text-decoration-color: var(--primary); }
+  .ime-seg.is-waiting { visibility: hidden; }
+  .hero-title ruby { ruby-position: over; }
+  .hero-title rt {
+    font-family: var(--font-body);
+    font-size: clamp(17px, 1.35vw, 21px); /* lead の大きさ */
+    font-weight: 700; letter-spacing: 0.1em;
+    color: var(--primary);
+    transition: opacity var(--t-base) var(--ease-standard);
+  }
+  .ime-seg.is-preedit rt { opacity: 0; }
+  .caret { display: none; width: 0.06em; height: 0.9em; margin-left: 0.04em; background: var(--ink); vertical-align: -0.08em; }
+  .caret.is-on { display: inline-block; animation: caret-blink 1s steps(1) infinite; }
+  @keyframes caret-blink { 50% { opacity: 0; } }
+
+  .hero-meta span { white-space: nowrap; }
+  .hero-meta span + span::before { content: "／"; margin: 0 4px; }
+
+  /* 見せ場：ライブ変換の画面の断片 */
+  .demo { border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--surface); padding: 24px; display: grid; gap: 16px; }
+  .demo-row { display: grid; gap: 4px; }
+  .demo-field { border: 1px solid var(--control-border); border-radius: var(--radius-control); padding: 12px 16px; font-family: var(--font-display); font-weight: 700; }
+  .demo-field .conv { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+  .demo-field .ruby { display: block; }
+  .demo-field.is-done { background: var(--success-bg); }
+  .demo .typed { font-family: var(--font-numeric); }
+  .demo-arrow { display: flex; justify-content: center; }
+
+  /* セクション */
+  section { padding: 112px 0; }
+  .section-head { display: grid; gap: 16px; margin-bottom: 48px; }
+
+  /* 特長（番号・見出し・2行の説明、細い線で区切る） */
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); }
+  .feature { padding: 32px 24px 0 0; display: grid; gap: 12px; align-content: start; }
+  .feature + .feature { border-left: 1px solid var(--line); padding-left: 24px; }
+  .feature .num { font-family: var(--font-numeric); font-weight: 700; color: var(--primary); }
+  .feature .el-icon { width: 32px; height: 32px; }
+
+  /* 表 */
+  .spec { width: 100%; max-width: 960px; border-collapse: collapse; border-top: 1px solid var(--line); }
+  .spec th, .spec td { text-align: left; vertical-align: top; padding: 16px 24px 16px 0; border-bottom: 1px solid var(--line); }
+  .spec th { width: 30%; }
+
+  details.inline { margin-top: 24px; max-width: 960px; border: 1px solid var(--line); border-radius: var(--radius-panel); padding: 0 24px; }
+
+  /* 手順（番号の丸と線） */
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; max-width: 960px; }
+  .step { display: grid; grid-template-columns: 48px 1fr; gap: 24px; position: relative; padding-bottom: 64px; }
+  .step:last-child { padding-bottom: 0; }
+  .step::before { content: ""; position: absolute; left: 23px; top: 48px; bottom: 0; width: 2px; background: var(--line); }
+  .step:last-child::before { display: none; }
+  .step-num {
+    width: 48px; height: 48px; border-radius: var(--radius-tag);
+    border: 2px solid var(--line); background: var(--surface);
+    display: grid; place-items: center; font-family: var(--font-numeric); font-weight: 700;
+  }
+  .step-body { display: grid; gap: 16px; padding-top: 4px; }
+  .ui { font-weight: 700; border: 1px solid var(--line); border-radius: var(--radius-control); padding: 0 8px; white-space: nowrap; }
+  kbd { font-family: var(--font-numeric); font-weight: 700; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: var(--radius-control); padding: 0 8px; white-space: nowrap; background: var(--surface); }
+  code { font-family: var(--font-numeric); font-weight: 500; }
+
+  .shot {
+    border-radius: var(--radius-panel); background: var(--skeleton-fill); border: 1px solid var(--line);
+    min-height: 200px; display: grid; place-items: center; text-align: center; padding: 24px;
+  }
+  .shot img { display: block; max-width: 100%; height: auto; border-radius: var(--radius-control); }
+
+  /* 使い方（キーと説明の表） */
+  .keys { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; max-width: 960px; border-top: 1px solid var(--line); }
+  .key-row { display: grid; grid-template-columns: 112px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); align-items: baseline; }
+
+  /* よくある質問（左に見出し、右に質問） */
+  .faq { display: grid; grid-template-columns: 4fr 8fr; gap: 48px; }
+  .faq-list { display: grid; gap: 16px; }
+  details { border: 1px solid var(--line); border-radius: var(--radius-panel); padding: 0 24px; background: var(--surface); }
+  summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 12px 0; font-weight: 700; }
+  summary::-webkit-details-marker { display: none; }
+  summary .el-icon { transition: transform var(--t-base) var(--ease-standard); }
+  details[open] summary .el-icon { transform: rotate(180deg); }
+  .answer { display: grid; gap: 12px; padding-bottom: 24px; }
+  pre { margin: 0; border: 1px solid var(--line); border-radius: var(--radius-control); padding: 12px 16px; overflow-x: auto; white-space: pre; }
+  .answer ol { margin: 0; padding-left: 24px; }
+
+  /* 締めの呼びかけ */
+  .band { background: var(--band-fill); padding: 80px 0; }
+  .band-card { background: var(--surface); border-radius: var(--radius-panel); padding: 64px; display: grid; gap: 32px; justify-items: start; }
+
+  /* フッター */
+  footer { padding: 64px 0; border-top: 1px solid var(--line); }
+  footer .wrap { display: grid; gap: 16px; }
+  footer nav { display: flex; flex-wrap: wrap; gap: 8px 24px; }
+
+  @media (max-width: 1024px) {
+    .wrap { padding: 0 24px; }
+    .hero-panel { grid-template-columns: 1fr; padding: 48px 32px; min-height: 0; }
+    .features { grid-template-columns: 1fr; }
+    .feature, .feature + .feature { border-left: 0; padding: 24px 0; border-bottom: 1px solid var(--line); }
+    .faq { grid-template-columns: 1fr; gap: 32px; }
+    .keys { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 20px; }
+    .site-nav { display: none; }
+    .hero { padding: 16px 0; }
+    .hero-panel { padding: 32px 20px; gap: 32px; }
+    .btn-large { width: 100%; }
+    section { padding: 64px 0; }
+    .step { grid-template-columns: 48px 1fr; gap: 16px; }
+    .band { padding: 48px 0; }
+    .band-card { padding: 32px 20px; }
+    .band-card .btn { width: 100%; }
+    .spec th { width: 36%; }
+    .key-row { grid-template-columns: 96px 1fr; }
+    details { padding: 0 16px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; }
+    .btn:active { transform: none; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link el-label" href="#main">本文へ進む</a>
+
+<!-- アイコン（ELMO 文教版の線アイコン） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5 2.5 20h19z"/><path d="M12 10v4.5M12 17.2h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.6h.01"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4.5" y="10.5" width="15" height="10" rx="1.5"/><path d="M8 10.5v-3a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.8 5.4-5.7"/></symbol>
+</svg>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="app-name" href="#top">エルモキー<span class="el-caption">ELMO_key</span></a>
+    <nav class="site-nav el-label" aria-label="ページ内の移動">
+      <a href="#features">できること</a>
+      <a href="#requirements">動作環境</a>
+      <a href="#install">インストール</a>
+      <a href="#faq">よくある質問</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ファーストビュー -->
+  <div class="hero" id="top">
+    <div class="wrap">
+      <div class="hero-panel">
+        <div class="hero-head">
+          <p class="el-small">エルモキー｜Windows 用・無料</p>
+          <h1 class="el-hero hero-title">
+            <span class="visually-hidden">予測変換AI ELMO_key</span>
+            <span aria-hidden="true">
+              <span class="line"><span class="ime-seg" data-reading="よそくへんかんAI"><ruby>予測<rt>よそく</rt></ruby><ruby>変換<rt>へんかん</rt></ruby>AI</span><span class="caret"></span></span>
+              <span class="line">ELMO_key</span>
+            </span>
+          </h1>
+        </div>
+        <div class="hero-copy">
+          <p class="el-lead prose">打つそばから、漢字に。PC の中の AI が前後の文脈を見て、変換を整えます。スペースを押さなくても、入力中から漢字かな交じりに変わる日本語入力ソフトです。</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary btn-large el-lead" id="download-button" href="#install" aria-disabled="true" style="font-weight:700">
+              <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg>
+              <span id="download-label">Windows 版をダウンロード</span>
+            </a>
+            <a class="btn btn-secondary el-label" href="#install">インストールの手順を見る</a>
+          </div>
+          <p class="el-caption hero-meta" aria-live="polite"><span>Windows 10 / 11（64 ビット）</span><span id="release-version">最新版</span><span id="release-size">約 110 MB</span><span id="release-date" hidden></span></p>
+          <div class="notice notice--warning el-caption" role="note">
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-warn"/></svg>
+            <p><strong>注意：</strong>Mozkey や Mozc が入っている PC では、先にアンインストールしてください。同じしくみを使っているため、一緒には入れられません。<a href="#uninstall">アンインストールの方法</a></p>
+          </div>
+        </div>
+
+        <figure class="demo" aria-label="ライブ変換の例：かいぎのしりょう と打つ様子">
+          <p class="el-small">ライブ変換の例</p>
+          <div class="demo-row">
+            <p class="el-caption">「<span class="typed">kaigino</span>」まで打ったところ</p>
+            <p class="demo-field el-title"><span class="conv">会議の</span></p>
+          </div>
+          <div class="demo-arrow" aria-hidden="true"><svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-down"/></svg></div>
+          <div class="demo-row">
+            <p class="el-caption">続けて「<span class="typed">shiryou</span>」と打つと</p>
+            <p class="demo-field el-title"><span class="conv">会議の資料</span></p>
+          </div>
+          <div class="demo-arrow" aria-hidden="true"><svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#i-arrow-down"/></svg></div>
+          <div class="demo-row">
+            <p class="el-caption"><kbd>Enter</kbd> で確定</p>
+            <p class="demo-field is-done el-title">会議の資料</p>
+          </div>
+        </figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- できること -->
+  <section id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="el-display">エルモキーで<span class="phrase">できること</span></h2>
+        <p class="el-lead prose">インストールするだけで、どれも最初から使えます。</p>
+      </div>
+      <div class="features">
+        <div class="feature">
+          <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-edit"/></svg>
+          <p class="num el-label">01</p>
+          <h3 class="el-title">スペースなしで漢字に</h3>
+          <p>入力しているそばから、自動で漢字かな交じりに変わります。そのまま <kbd>Enter</kbd> で確定できます。</p>
+        </div>
+        <div class="feature">
+          <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-sparkle"/></svg>
+          <p class="num el-label">02</p>
+          <h3 class="el-title">AI が文脈を見て整える</h3>
+          <p>前後の文章を見て、PC の中の小さな AI が変換を直します。AI が間に合わないときも入力は止まりません。</p>
+        </div>
+        <div class="feature">
+          <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-lock"/></svg>
+          <p class="num el-label">03</p>
+          <h3 class="el-title">打った文字は外に出ない</h3>
+          <p>変換も AI も、すべて PC の中で動きます。入力した内容をインターネットに送らず、オフラインでも使えます。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 動作環境 -->
+  <section id="requirements">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="el-display">動作環境</h2>
+        <p class="el-lead prose">ふつうの事務用 PC で動くように作っています。グラフィックボード（GPU）は要りません。</p>
+      </div>
+      <table class="spec">
+        <tbody>
+          <tr><th scope="row" class="el-label">OS</th><td>Windows 11 / Windows 10（バージョン 1809 以降）</td></tr>
+          <tr><th scope="row" class="el-label">種類</th><td>64 ビット版（x64）。ARM 版の Windows には対応していません。</td></tr>
+          <tr><th scope="row" class="el-label">メモリ</th><td>8 GB 以上をおすすめします</td></tr>
+          <tr><th scope="row" class="el-label">インストール</th><td>管理者の許可が必要です（途中で「はい」を押す画面が出ます）</td></tr>
+          <tr><th scope="row" class="el-label">料金</th><td>無料（オープンソースソフトウェア）</td></tr>
+        </tbody>
+      </table>
+      <details class="inline">
+        <summary>自分の PC が 64 ビット版か確かめるには
+          <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+        </summary>
+        <div class="answer">
+          <p><span class="ui">スタート</span> → <span class="ui">設定</span> → <span class="ui">システム</span> → <span class="ui">バージョン情報</span>（Windows 10 では <span class="ui">詳細情報</span>）を開き、「システムの種類」を見てください。</p>
+          <p>「64 ビット オペレーティング システム、x64 ベース プロセッサ」と書かれていれば使えます。</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- インストールの手順 -->
+  <section id="install">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="el-display">インストールの手順</h2>
+        <p class="el-lead prose">5 分ほどで終わります。途中で出てくる確認の画面も、ひとつずつ説明します。</p>
+      </div>
+
+      <ol class="steps">
+        <li class="step">
+          <span class="step-num" aria-hidden="true">1</span>
+          <div class="step-body">
+            <h3 class="el-title">ダウンロードして開く</h3>
+            <p class="prose">上の <span class="ui">Windows 版をダウンロード</span> を押すと、<code>ELMO_key_x64.msi</code> が「ダウンロード」フォルダーに保存されます。保存されたファイルをダブルクリックして開きます。</p>
+            <div class="notice notice--info el-caption">
+              <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-info"/></svg>
+              <p>Microsoft Edge で「一般的にダウンロードされていません」と出たときは、右の <span class="ui">…</span> から <span class="ui">保存</span>（または <span class="ui">保持する</span>）を選んでください。新しいソフトで、ダウンロードした人の数が少ないと出る表示です。</p>
+            </div>
+            <div class="shot el-caption" data-todo="screenshot-edge-download">画面写真が入ります（仮）：Edge のダウンロード表示と「保持する」</div>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">2</span>
+          <div class="step-body">
+            <h3 class="el-title">青い画面で「詳細情報」→「実行」</h3>
+            <p class="prose">「<strong>Windows によって PC が保護されました</strong>」という青い画面が出ます。エルモキーに有料の「デジタル署名」を付けていないために出る表示です。<span class="ui">詳細情報</span> を押し、下に出てくる <span class="ui">実行</span> を押してください。</p>
+            <div class="shot el-caption" data-todo="screenshot-smartscreen">画面写真が入ります（仮）：「Windows によって PC が保護されました」→「詳細情報」→「実行」</div>
+            <div class="notice notice--warning el-caption">
+              <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-warn"/></svg>
+              <p><strong>注意：</strong>このページ以外から入手したファイルでは、この操作をしないでください。心配なときは<a href="#faq-verify">ファイルが本物か確かめる方法</a>があります。</p>
+            </div>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">3</span>
+          <div class="step-body">
+            <h3 class="el-title">「はい」で許可する</h3>
+            <p class="prose">「このアプリがデバイスに変更を加えることを許可しますか？」と聞かれたら <span class="ui">はい</span> を押します。インストールが始まり、1〜2 分で終わります。</p>
+            <div class="shot el-caption" data-todo="screenshot-uac">画面写真が入ります（仮）：ユーザー アカウント制御の画面</div>
+            <div class="notice notice--info el-caption">
+              <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-info"/></svg>
+              <p>「はい」が押せず、管理者のパスワードを求められたときは、社内の PC 管理の担当者に相談してください。</p>
+            </div>
+          </div>
+        </li>
+        <li class="step">
+          <span class="step-num" aria-hidden="true">4</span>
+          <div class="step-body">
+            <h3 class="el-title">PC を再起動して使い始める</h3>
+            <p class="prose">インストールが終わったら、PC を再起動します。再起動すると、最初から ELMO_key が選ばれた状態になります。メモ帳などで、そのまま日本語を打ってみてください。</p>
+            <div class="notice notice--info el-caption">
+              <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-info"/></svg>
+              <p>画面右下の表示が「A」のときは、打っても英字のままです。<kbd>変換</kbd> キーを押して「あ」にしてください。</p>
+            </div>
+            <p class="prose">ELMO_key になっていないときは、<kbd>Windows</kbd> キーを押しながら <kbd>Space</kbd> を押し、出てきた一覧から <span class="ui">ELMO_key</span> を選びます。毎回 ELMO_key にしたいときは、画面右下の「あ」か「A」を右クリック → <span class="ui">プロパティ</span> → <span class="ui">その他</span> タブ → <span class="ui">Windows の既定 IME に設定</span> を押してください（<span class="ui">以前の設定に戻す</span> で元に戻せます）。</p>
+            <div class="shot el-caption" data-todo="screenshot-switch">画面写真が入ります（仮）：Windows + Space の一覧で ELMO_key を選んだところ</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 基本の使い方 -->
+  <section id="usage">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="el-display">基本の使い方</h2>
+        <p class="el-lead prose">ふだんの日本語入力と同じ感覚で使えます。よく選ぶ漢字は覚えて、次から上のほうに出します。</p>
+      </div>
+      <div class="keys">
+        <div class="key-row"><span class="el-label">そのまま打つ</span><span>ローマ字で打つと、入力中から自動で漢字に変わります。</span></div>
+        <div class="key-row"><span><kbd>Enter</kbd></span><span>表示されている文字をそのまま確定します。</span></div>
+        <div class="key-row"><span><kbd>Space</kbd></span><span>違う漢字にしたいとき、候補の一覧から選びます。</span></div>
+        <div class="key-row"><span><kbd>Esc</kbd></span><span>変換をやめて、打った読み（ひらがな）に戻します。</span></div>
+        <div class="key-row"><span><kbd>無変換</kbd></span><span>英数（「A」）にします。英字をそのまま打てます。</span></div>
+        <div class="key-row"><span><kbd>変換</kbd></span><span>ひらがな（「あ」）に戻します。</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- よくある質問 -->
+  <section id="faq">
+    <div class="wrap faq">
+      <div class="section-head">
+        <h2 class="el-display">よくある<span class="phrase">質問</span></h2>
+        <p class="el-lead">困ったときは、まずここを見てください。</p>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary>青い警告の画面が出ました。大丈夫ですか？
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p>「デジタル署名」がないソフトを開いたときに Windows が出す表示で、ウイルスが見つかったという意味ではありません。署名には毎年費用がかかるため、エルモキーでは付けていません。</p>
+            <p>ただし、このページ以外から入手したファイルや、「ウイルスが検出されました」と出たファイルは実行しないでください。</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>入力した文字が、どこかに送られることはありますか？
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p>ありません。変換も AI の補正も PC の中で行い、AI が覚えた内容も PC の中に保存します。インストール時に、外部と通信しないよう Windows ファイアウォールの設定も追加します。</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>動きが重い、AI の補正を止めたい
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p>エルモキーの設定画面で、AI の補正やライブ変換をオフにできます。オフにしても、ふつうの日本語入力として使えます。</p>
+            <p>設定画面は、画面右下の「あ」や「A」の表示を右クリックし、メニューの <span class="ui">プロパティ</span> から開きます。</p>
+          </div>
+        </details>
+
+        <details id="uninstall">
+          <summary>元の Microsoft IME に戻したい・アンインストールしたい
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p>一時的に戻すなら、<kbd>Windows</kbd> + <kbd>Space</kbd> の一覧から <span class="ui">Microsoft IME</span> を選びます。完全にやめるときは、次の手順でアンインストールします（Mozkey や Mozc も同じ手順です）。</p>
+            <ol>
+              <li><span class="ui">スタート</span> → <span class="ui">設定</span> → <span class="ui">アプリ</span> → <span class="ui">インストールされているアプリ</span> を開きます（Windows 10 では <span class="ui">アプリと機能</span>）。</li>
+              <li>一覧の <span class="ui">ELMO_key</span> の右にある <span class="ui">…</span> から <span class="ui">アンインストール</span> を押します（Windows 10 では項目を押してから <span class="ui">アンインストール</span>）。</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary>Mozkey や Mozc と一緒に使えますか？
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p>使えません。エルモキーは Mozkey（Mozc をもとにした日本語入力ソフト）をもとに作っていて、内部のしくみが共通しているためです。どちらかが入っている場合は、先にアンインストールしてください。</p>
+          </div>
+        </details>
+
+        <details id="faq-verify">
+          <summary>ダウンロードしたファイルが本物か確かめたい（詳しい方向け）
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p>PowerShell で次のコマンドを実行し、表示された値が <span id="hash-source">GitHub のリリースページ</span>に書かれた SHA-256 の値と同じか確かめてください。</p>
+            <pre class="el-caption"><code>Get-FileHash "$env:USERPROFILE\Downloads\ELMO_key_x64.msi" -Algorithm SHA256</code></pre>
+            <p id="hash-line" class="el-caption" hidden>最新版の値：<code id="hash-value"></code></p>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- 締めの呼びかけ -->
+  <div class="band">
+    <div class="wrap">
+      <div class="band-card">
+        <p class="el-display"><span class="phrase">エルモキーを、</span><span class="phrase">使ってみる。</span></p>
+        <a class="btn btn-primary btn-large el-lead" id="download-button-2" href="#install" aria-disabled="true" style="font-weight:700">
+          <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg>
+          <span class="download-label">Windows 版をダウンロード</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap el-caption">
+    <nav class="el-label" aria-label="関連リンク">
+      <a id="link-source" href="#">ソースコード（GitHub）</a>
+      <a id="link-releases" href="#">すべてのリリース</a>
+      <a id="link-credits" href="#">ライセンスとクレジット</a>
+      <a id="link-qt" href="#">Qt のソースコード</a>
+    </nav>
+    <p class="prose">エルモキー（ELMO_key）は、<a href="https://github.com/koyasi777/mozkey">Mozkey</a>（koyasi777）と <a href="https://github.com/google/mozc">Mozc</a>（Google）をもとにしたオープンソースソフトウェアです。Google や koyasi777 の公式製品ではありません。AI モデルには Zenz（Miwa-Keita）を、AI の実行には llama.cpp を使っています。</p>
+    <p>Copyright 2026 ELMO_key contributors. Portions Copyright 2026 koyasi777, 2010-2026 Google LLC.</p>
+  </div>
+</footer>
+
+<script>
+  // ===== 設定（公開先が決まったら書き換える） =====
+  // GitHub のリポジトリ（"アカウント名/リポジトリ名"）。未定のあいだは空にしておく。
+  const REPO = "elmocyber12/elmo-key";
+  // リリースに添付する MSI のファイル名。版が変わっても同じ名前にすると、
+  // 「最新版のダウンロード」リンクが書き換えなしで使える。
+  const ASSET = "ELMO_key_x64.msi";
+  // ===============================================
+
+  // 見出しのライブ変換（開いたときに1回だけ。動きを減らす設定では最初から完成形）
+  (function () {
+    const segs = document.querySelectorAll(".hero-title .ime-seg");
+    const carets = document.querySelectorAll(".hero-title .caret");
+    if (!segs.length) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const finals = Array.prototype.map.call(segs, function (s) { return s.innerHTML; });
+    function preedit(i) {
+      segs[i].textContent = segs[i].dataset.reading;
+      segs[i].className = "ime-seg is-preedit";
+      carets.forEach(function (c, j) { c.classList.toggle("is-on", j === i); });
+    }
+    function convert(i) {
+      segs[i].innerHTML = finals[i];
+      segs[i].className = "ime-seg is-preedit";
+      // 変換後の表示へ（下線をピンクの実線に、ふりがなを出す）
+      requestAnimationFrame(function () { segs[i].className = "ime-seg is-converted"; });
+    }
+    function commit() {
+      segs.forEach(function (s) { s.className = "ime-seg"; });
+      carets.forEach(function (c) { c.classList.remove("is-on"); });
+    }
+
+    function start() {
+      title.classList.remove("is-pending");
+
+      // 読みが1行に収まらない画面（スマートフォンなど）では、行が動いて読みにくいので動かさない
+      for (let i = 0; i < segs.length; i++) {
+        segs[i].textContent = segs[i].dataset.reading;
+        const wraps = segs[i].getClientRects().length > 1;
+        segs[i].innerHTML = finals[i];
+        if (wraps) return;
+      }
+
+      // 読み → 変換 を文節ごとに順に行い、最後に確定する
+      // （2つ目以降の文節は、自分の番まで場所だけ取って隠しておく）
+      segs.forEach(function (s, i) {
+        if (i === 0) { preedit(0); return; }
+        s.textContent = s.dataset.reading;
+        s.className = "ime-seg is-waiting";
+      });
+      let t = 0;
+      segs.forEach(function (s, i) {
+        if (i > 0) { t += 600; setTimeout(function () { preedit(i); }, t); }
+        t += 900;
+        setTimeout(function () { convert(i); }, t);
+      });
+      setTimeout(commit, t + 1000);
+    }
+
+    // 書体の読み込みを待ってから（最大1.5秒）、1行に収まるかを測って始める
+    const title = document.querySelector(".hero-title");
+    title.classList.add("is-pending");
+    const fontsReady = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    const timeout = new Promise(function (resolve) { setTimeout(resolve, 1500); });
+    Promise.race([fontsReady, timeout]).then(start, start);
+  })();
+
+  (function () {
+    const buttons = [document.getElementById("download-button"), document.getElementById("download-button-2")];
+    const labels = document.querySelectorAll("#download-label, .download-label");
+
+    // ページ内リンクで質問を指したときは、その質問を開く
+    function openTargetDetails() {
+      const target = location.hash && document.getElementById(location.hash.slice(1));
+      if (target && target.tagName === "DETAILS") target.open = true;
+    }
+    window.addEventListener("hashchange", openTargetDetails);
+    openTargetDetails();
+
+    if (!REPO) {
+      labels.forEach(function (el) { el.textContent = "ダウンロードは準備中です"; });
+      return;
+    }
+
+    const base = "https://github.com/" + REPO;
+    buttons.forEach(function (b) {
+      b.href = base + "/releases/latest/download/" + ASSET;
+      b.removeAttribute("aria-disabled");
+    });
+    document.getElementById("link-source").href = base;
+    document.getElementById("link-releases").href = base + "/releases";
+    document.getElementById("link-credits").href = base + "/blob/main/THIRD_PARTY_NOTICES.md";
+    document.getElementById("link-qt").href = base + "/releases/latest";
+    document.getElementById("hash-source").innerHTML = '<a href="' + base + '/releases/latest">GitHub のリリースページ</a>';
+
+    // 最新版の情報を GitHub から取得して表示する（失敗してもボタンとリンクは使える）
+    fetch("https://api.github.com/repos/" + REPO + "/releases/latest", {
+      headers: { "Accept": "application/vnd.github+json" }
+    })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (release) {
+        if (release.tag_name) document.getElementById("release-version").textContent = release.tag_name;
+        if (release.published_at) {
+          const d = new Date(release.published_at);
+          const el = document.getElementById("release-date");
+          el.textContent = d.getFullYear() + "年" + (d.getMonth() + 1) + "月" + d.getDate() + "日公開";
+          el.hidden = false;
+        }
+        const asset = (release.assets || []).find(function (a) { return a.name === ASSET; });
+        if (asset) {
+          document.getElementById("release-size").textContent = "約 " + Math.round(asset.size / 1024 / 1024) + " MB";
+          if (asset.digest && asset.digest.indexOf("sha256:") === 0) {
+            document.getElementById("hash-value").textContent = asset.digest.slice(7).toUpperCase();
+            document.getElementById("hash-line").hidden = false;
+          }
+        }
+      })
+      .catch(function () { /* 取得できなくてもページはそのまま使える */ });
+  })();
+</script>
+</body>
+</html>
