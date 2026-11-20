@@ -551,6 +551,30 @@ UINT __stdcall EnableTipProfile(MSIHANDLE msi_handle) {
   return ERROR_SUCCESS;
 }
 
+UINT __stdcall SetTipAsDefault(MSIHANDLE msi_handle) {
+  bool is_service = false;
+  if (::mozc::WinUtil::IsServiceAccount(&is_service) && is_service) {
+    return ERROR_SUCCESS;
+  }
+
+  wchar_t clsid[64] = {};
+  wchar_t profile_id[64] = {};
+  if (!::StringFromGUID2(::mozc::win32::TsfProfile::GetTextServiceGuid(), clsid,
+                         std::size(clsid)) ||
+      !::StringFromGUID2(::mozc::win32::TsfProfile::GetProfileGuid(),
+                         profile_id, std::size(profile_id))) {
+    // Best effort only: the IME stays usable via Windows + Space.
+    return ERROR_SUCCESS;
+  }
+
+  // 0x0411 == MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN)
+  const auto desc = ::mozc::win32::StrCatW(L"0x0411:", clsid, profile_id);
+  if (!::SetDefaultLayoutOrTip(desc.c_str(), 0)) {
+    LOG_ERROR_FOR_OMAHA();
+  }
+  return ERROR_SUCCESS;
+}
+
 UINT __stdcall FixupConfigFilePermission(MSIHANDLE msi_handle) {
   bool is_service = false;
   if (::mozc::WinUtil::IsServiceAccount(&is_service) && is_service) {

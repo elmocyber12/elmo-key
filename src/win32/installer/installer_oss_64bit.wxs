@@ -123,6 +123,11 @@
     <Icon Id="add_remove_program_icon.ico" SourceFile="$(var.AddRemoveProgramIconPath)" />
     <Property Id="ARPPRODUCTICON" Value="add_remove_program_icon.ico" />
 
+    <!-- ELMO_key: make ELMO_key the installing user's default input method on
+         the initial installation. Set ELMOKEY_SET_DEFAULT_IME=0 on the
+         msiexec command line to skip it (e.g. managed deployments). -->
+    <Property Id="ELMOKEY_SET_DEFAULT_IME" Value="1" Secure="yes" />
+
     <!-- Disable Modify and Repair buttons. -->
     <Property Id="ARPNOMODIFY" Value="1" />
     <Property Id="ARPNOREPAIR" Value="1" />
@@ -195,6 +200,7 @@
     <CustomAction Id="InitialInstallation" DllEntry="InitialInstallation" Execute="deferred" Impersonate="no" BinaryRef="mozc_installer_helper.dll" />
     <CustomAction Id="InitialInstallationCommit" DllEntry="InitialInstallationCommit" Execute="commit" Impersonate="no" BinaryRef="mozc_installer_helper.dll" />
     <CustomAction Id="EnableTipProfile" DllEntry="EnableTipProfile" Execute="commit" Impersonate="yes" BinaryRef="mozc_installer_helper.dll" />
+    <CustomAction Id="SetTipAsDefault" DllEntry="SetTipAsDefault" Execute="commit" Impersonate="yes" Return="ignore" BinaryRef="mozc_installer_helper.dll" />
     <CustomAction Id="FixupConfigFilePermission" DllEntry="FixupConfigFilePermission" Execute="commit" Impersonate="yes" BinaryRef="mozc_installer_helper.dll" />
     <CustomAction Id="HideCancelButton" DllEntry="HideCancelButton" Return="ignore" BinaryRef="mozc_installer_helper.dll" />
     <CustomAction Id="SaveCustomActionData" DllEntry="SaveCustomActionData" BinaryRef="mozc_installer_helper.dll" />
@@ -251,6 +257,7 @@
       <Custom Action="InitialInstallationCommit" Before="FixupConfigFilePermission" Condition="(NOT (REMOVE=&quot;ALL&quot;)) AND (NOT UPGRADING)" />
       <Custom Action="FixupConfigFilePermission" Before="EnableTipProfile" Condition="NOT (REMOVE=&quot;ALL&quot;)" />
       <Custom Action="EnableTipProfile" Before="InstallFinalize" Condition="NOT (REMOVE=&quot;ALL&quot;)" />
+      <Custom Action="SetTipAsDefault" After="EnableTipProfile" Condition="(NOT (REMOVE=&quot;ALL&quot;)) AND (NOT UPGRADING) AND (ELMOKEY_SET_DEFAULT_IME=&quot;1&quot;)" />
       <!-- show reboot dialog to execute pending file opartions -->
       <?if ($(var.VSConfigurationName) = "Release") ?>
         <ScheduleReboot After="InstallFinalize" Condition="(REMOVE=&quot;ALL&quot;)" />

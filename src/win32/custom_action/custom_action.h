@@ -76,6 +76,12 @@ UINT __stdcall InitialInstallationCommit(MSIHANDLE msi_handle);
 // Enable TIP profile for the calling user unless it's a service account.
 UINT __stdcall EnableTipProfile(MSIHANDLE msi_handle);
 
+// ELMO_key: make the TIP profile the calling user's default input method.
+// Scheduled only for the initial installation (see installer_oss_64bit.wxs),
+// so a user's later choice is not overwritten by upgrades. Never fails the
+// installation.
+UINT __stdcall SetTipAsDefault(MSIHANDLE msi_handle);
+
 // Update config1.db file access controll to make it readable to AppContainer.
 UINT __stdcall FixupConfigFilePermission(MSIHANDLE msi_handle);
 
