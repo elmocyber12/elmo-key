@@ -9,9 +9,9 @@
 </p>
 
 <p align="center">
-  <a href="https://OWNER.github.io/elmo-key/"><strong>ダウンロードページ（はじめての方はこちら）</strong></a>
+  <a href="https://elmocyber12.github.io/elmo-key/"><strong>ダウンロードページ（はじめての方はこちら）</strong></a>
   ・
-  <a href="https://github.com/OWNER/elmo-key/releases/latest">最新のリリース</a>
+  <a href="https://github.com/elmocyber12/elmo-key/releases/latest">最新のリリース</a>
 </p>
 
 ---
@@ -28,7 +28,7 @@
 - インストールには管理者の許可が必要です
 
 ## インストール
-[ダウンロードページ](https://OWNER.github.io/elmo-key/) の手順をご覧ください。
+[ダウンロードページ](https://elmocyber12.github.io/elmo-key/) の手順をご覧ください。
 署名のないソフトのため、Windows の青い警告画面（SmartScreen）が出ます。「詳細情報」→「実行」で進めます。
 
 Mozkey・Mozc とは内部のしくみが共通しているため、同じ PC に一緒には入れられません。入っている場合は先にアンインストールしてください。
@@ -42,6 +42,7 @@ ELMO_key は、次のオープンソースソフトウェアをもとにして�
 ### Mozkey からの主な変更点
 - 表示名を ELMO_key に変更（IME の一覧、インストーラー、バージョン情報、入力中の札、設定画面の「Zenz」「Mozc」の表記など）。内部の名前・ID・インストール先は Mozkey と同じです。
 - アイコンを変更。
+- 入力外観（候補の窓・入力モードの表示・入力中の札など）の初期設定を、ELMO のデザインシステム（文教版）の色に変更。
 - 初期設定のキー（MS-IME 風）で、`変換` を IME オン、`無変換` を IME オフに変更。
 - 初めてのインストールのとき、インストールしたユーザーの既定の入力方法を ELMO_key にする（`msiexec /i ... ELMOKEY_SET_DEFAULT_IME=0` で無効にできます）。
 - 追加辞書から、元データの利用条件がはっきりしない「ニコニコ大百科・pixiv 百科事典」由来の辞書を外しました。
