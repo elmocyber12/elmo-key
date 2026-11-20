@@ -40,13 +40,13 @@ Composition	F7	ConvertToFullKatakana
 Composition	F8	ConvertToHalfWidth
 Composition	F9	ConvertToFullAlphanumeric
 Composition	Hankaku/Zenkaku	IMEOff
-Composition	Henkan	Convert
+Composition	Henkan	IMEOn
 Composition	Hiragana	CompositionModeHiragana
 Composition	Home	MoveCursorToBeginning
 Composition	Kanji	IMEOff
 Composition	Katakana	CompositionModeFullKatakana
 Composition	Left	MoveCursorLeft
-Composition	Muhenkan	SwitchKanaType
+Composition	Muhenkan	IMEOff
 Composition	OFF	IMEOff
 Composition	ON	IMEOn
 Composition	Right	MoveCursorRight
@@ -102,13 +102,13 @@ Conversion	F7	ConvertToFullKatakana
 Conversion	F8	ConvertToHalfWidth
 Conversion	F9	ConvertToFullAlphanumeric
 Conversion	Hankaku/Zenkaku	IMEOff
-Conversion	Henkan	ConvertNext
+Conversion	Henkan	IMEOn
 Conversion	Hiragana	CompositionModeHiragana
 Conversion	Home	SegmentFocusFirst
 Conversion	Kanji	IMEOff
 Conversion	Katakana	CompositionModeFullKatakana
 Conversion	Left	SegmentFocusLeft
-Conversion	Muhenkan	SwitchKanaType
+Conversion	Muhenkan	IMEOff
 Conversion	OFF	IMEOff
 Conversion	ON	IMEOn
 Conversion	PageDown	ConvertNextPage
@@ -133,7 +133,7 @@ Conversion	VirtualEnter	CommitOnlyFirstSegment
 DirectInput	Eisu	IMEOn
 DirectInput	F13	IMEOn
 DirectInput	Hankaku/Zenkaku	IMEOn
-DirectInput	Henkan	Reconvert
+DirectInput	Henkan	IMEOn
 DirectInput	Hiragana	IMEOn
 DirectInput	Kanji	IMEOn
 DirectInput	Katakana	IMEOn
@@ -145,10 +145,10 @@ Precomposition	Ctrl Shift Space	InsertFullSpace
 Precomposition	Eisu	ToggleAlphanumericMode
 Precomposition	Hankaku/Zenkaku	IMEOff
 Precomposition	Hiragana	CompositionModeHiragana
-Precomposition	Henkan	Reconvert
+Precomposition	Henkan	IMEOn
 Precomposition	Kanji	IMEOff
 Precomposition	Katakana	CompositionModeFullKatakana
-Precomposition	Muhenkan	CompositionModeSwitchKanaType
+Precomposition	Muhenkan	IMEOff
 Precomposition	OFF	IMEOff
 Precomposition	ON	IMEOn
 Precomposition	Shift Muhenkan	ToggleAlphanumericMode
