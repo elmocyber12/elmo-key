@@ -3536,11 +3536,13 @@ class ConversionStatusPreviewWidget final : public QWidget {
     const double cell_width = (width() - 20.0) / columns;
     const double cell_height = (height() - 12.0) / rows;
     const QString labels[4] = {
-        StatusUiText("Reading", "入力中"), QStringLiteral("Mozc"),
-        StatusUiText("Zenz processing", "Zenz処理中"),
-        StatusUiText("Zenz applied", "Zenz適用済み")};
-    const char* words[4] = {"入力中", "Mozc", "Zenz…", "Zenz"};
-    const char* symbols[4] = {"あ", "M", "…", "Z"};
+        StatusUiText("Reading", "入力中"), QStringLiteral("ELMO_key"),
+        StatusUiText("AI processing", "AI 処理中"),
+        StatusUiText("AI applied", "AI 適用済み")};
+    // ELMO_key: keep in sync with StatusText() in
+    // renderer/win32/conversion_status_window.cc.
+    const char* words[4] = {"入力中", "ELMO_key", "ELMO_key AI…", "ELMO_key AI"};
+    const char* symbols[4] = {"あ", "E", "…", "AI"};
     const uint32_t colors[4] = {
         style_.reading_color(), style_.mozc_color(),
         style_.zenz_pending_color(), style_.zenz_color()};
@@ -4830,9 +4832,9 @@ void ConfigDialog::InitializeRendererAppearanceControls() {
   auto* colors = make_section(StatusUiText("Status colors", "状態別の色"));
   const struct { const char* english; const char* japanese;
                  const char* id; uint32_t rgb; } color_items[] = {
-      {"Mozc", "Mozc", "conversionStatusMozcColorButton", 0x586b85},
-      {"Zenz processing", "Zenz処理中", "conversionStatusPendingColorButton", 0x847438},
-      {"Zenz applied", "Zenz適用済み", "conversionStatusZenzColorButton", 0x338d85},
+      {"ELMO_key", "ELMO_key", "conversionStatusMozcColorButton", 0x586b85},
+      {"AI processing", "AI 処理中", "conversionStatusPendingColorButton", 0x847438},
+      {"AI applied", "AI 適用済み", "conversionStatusZenzColorButton", 0x338d85},
       {"Reading", "入力中", "conversionStatusReadingColorButton", 0x747d8c},
       {"Text", "文字", "conversionStatusTextColorButton", 0xffffff},
       {"Border", "枠線", "conversionStatusBorderColorButton", 0x354357},

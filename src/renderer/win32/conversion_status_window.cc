@@ -112,23 +112,26 @@ std::wstring StatusText(ConversionDisplayStatus state,
   if (label == config::Config::CONVERSION_STATUS_COLOR_ONLY) return L"";
   if (label == config::Config::CONVERSION_STATUS_SYMBOL) {
     switch (state) {
-      case ConversionDisplayStatus::kMozc: return L"M";
+      // ELMO_key: product-branded symbols (E = normal conversion, AI = Zenz).
+      case ConversionDisplayStatus::kMozc: return L"E";
       case ConversionDisplayStatus::kZenzPending: return L"…";
-      case ConversionDisplayStatus::kZenz: return L"Z";
+      case ConversionDisplayStatus::kZenz: return L"AI";
       case ConversionDisplayStatus::kReading: return L"あ";
       default: return L"";
     }
   }
   switch (state) {
-    case ConversionDisplayStatus::kMozc: return L"Mozc";
-    case ConversionDisplayStatus::kZenzPending: return L"Zenz…";
-    case ConversionDisplayStatus::kZenz: return L"Zenz";
+    // ELMO_key: show the product name instead of the engine names
+    // (Mozc / Zenz) while keeping each state distinguishable.
+    case ConversionDisplayStatus::kMozc: return L"ELMO_key";
+    case ConversionDisplayStatus::kZenzPending: return L"ELMO_key AI…";
+    case ConversionDisplayStatus::kZenz: return L"ELMO_key AI";
     case ConversionDisplayStatus::kReading: return L"入力中";
     default: return L"";
   }
 }
 
-// The saved width is a minimum for text labels; otherwise Zenz… can be
+// The saved width is a minimum for text labels; otherwise "ELMO_key AI…" can be
 // truncated on non-100% DPI displays. The circle always has fixed diameter.
 int RecommendedWidth(HWND hwnd, uint32_t dpi, int height,
                      const config::Config::ConversionStatusIndicatorStyle& style,
