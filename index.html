@@ -213,11 +213,6 @@
   kbd { font-family: var(--font-numeric); font-weight: 700; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: var(--radius-control); padding: 0 8px; white-space: nowrap; background: var(--surface); }
   code { font-family: var(--font-numeric); font-weight: 500; }
 
-  .shot {
-    border-radius: var(--radius-panel); background: var(--skeleton-fill); border: 1px solid var(--line);
-    min-height: 200px; display: grid; place-items: center; text-align: center; padding: 24px;
-  }
-  .shot img { display: block; max-width: 100%; height: auto; border-radius: var(--radius-control); }
 
   /* 使い方（キーと説明の表） */
   .keys { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; max-width: 960px; border-top: 1px solid var(--line); }
@@ -430,7 +425,6 @@
               <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-info"/></svg>
               <p>Microsoft Edge で「一般的にダウンロードされていません」と出たときは、右の <span class="ui">…</span> から <span class="ui">保存</span>（または <span class="ui">保持する</span>）を選んでください。新しいソフトで、ダウンロードした人の数が少ないと出る表示です。</p>
             </div>
-            <div class="shot el-caption" data-todo="screenshot-edge-download">画面写真が入ります（仮）：Edge のダウンロード表示と「保持する」</div>
           </div>
         </li>
         <li class="step">
@@ -438,7 +432,6 @@
           <div class="step-body">
             <h3 class="el-title">青い画面で「詳細情報」→「実行」</h3>
             <p class="prose">「<strong>Windows によって PC が保護されました</strong>」という青い画面が出ます。エルモキーに有料の「デジタル署名」を付けていないために出る表示です。<span class="ui">詳細情報</span> を押し、下に出てくる <span class="ui">実行</span> を押してください。</p>
-            <div class="shot el-caption" data-todo="screenshot-smartscreen">画面写真が入ります（仮）：「Windows によって PC が保護されました」→「詳細情報」→「実行」</div>
             <div class="notice notice--warning el-caption">
               <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-warn"/></svg>
               <p><strong>注意：</strong>このページ以外から入手したファイルでは、この操作をしないでください。心配なときは<a href="#faq-verify">ファイルが本物か確かめる方法</a>があります。</p>
@@ -450,7 +443,6 @@
           <div class="step-body">
             <h3 class="el-title">「はい」で許可する</h3>
             <p class="prose">「このアプリがデバイスに変更を加えることを許可しますか？」と聞かれたら <span class="ui">はい</span> を押します。インストールが始まり、1〜2 分で終わります。</p>
-            <div class="shot el-caption" data-todo="screenshot-uac">画面写真が入ります（仮）：ユーザー アカウント制御の画面</div>
             <div class="notice notice--info el-caption">
               <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-info"/></svg>
               <p>「はい」が押せず、管理者のパスワードを求められたときは、社内の PC 管理の担当者に相談してください。</p>
@@ -467,7 +459,6 @@
               <p>画面右下の表示が「A」のときは、打っても英字のままです。<kbd>変換</kbd> キーを押して「あ」にしてください。</p>
             </div>
             <p class="prose">ELMO_key になっていないときは、<kbd>Windows</kbd> キーを押しながら <kbd>Space</kbd> を押し、出てきた一覧から <span class="ui">ELMO_key</span> を選びます。毎回 ELMO_key にしたいときは、画面右下の「あ」か「A」を右クリック → <span class="ui">プロパティ</span> → <span class="ui">その他</span> タブ → <span class="ui">Windows の既定 IME に設定</span> を押してください（<span class="ui">以前の設定に戻す</span> で元に戻せます）。</p>
-            <div class="shot el-caption" data-todo="screenshot-switch">画面写真が入ります（仮）：Windows + Space の一覧で ELMO_key を選んだところ</div>
           </div>
         </li>
       </ol>
