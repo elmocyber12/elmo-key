@@ -68,35 +68,58 @@ int ElmoSchoolRewriter::capability(const ConversionRequest& request) const {
 bool ElmoSchoolRewriter::RewriteCandidate(
     int max_grade, uint32_t furigana_style,
     converter::Candidate* candidate) const {
-  bool changed = false;
-  if (max_grade >= 1 && max_grade <= 6 && !candidate->key.empty() &&
-      !AllKanjiAllowed(candidate->value, max_grade)) {
-    // Show the whole word in hiragana (its reading).
-    candidate->value = candidate->key;
-    candidate->content_value = candidate->content_key;
-    changed = true;
-  }
-  if (furigana_style == 1 || furigana_style == 2) {
-    const std::string& content_value = candidate->content_value;
-    if (!candidate->content_key.empty() && content_value.size() <= candidate->value.size() &&
-        candidate->value.starts_with(content_value) &&
-        ContainsKanji(content_value) &&
-        content_value != candidate->content_key) {
-      const std::string_view open = furigana_style == 1 ? "（" : "(";
-      const std::string_view close = furigana_style == 1 ? "）" : ")";
-      const std::string functional =
-          candidate->value.substr(content_value.size());
-      std::string new_content =
-          absl::StrCat(content_value, open, candidate->content_key, close);
-      candidate->value = absl::StrCat(new_content, functional);
-      candidate->content_value = std::move(new_content);
-      changed = true;
+  const bool grade_on = max_grade >= 1 && max_grade <= 6;
+  const bool furigana_on = furigana_style == 1 || furigana_style == 2;
+  if ((!grade_on && !furigana_on) || candidate->key.empty()) return false;
+  const std::string_view open = furigana_style == 1 ? "（" : "(";
+  const std::string_view close = furigana_style == 1 ? "）" : ")";
+
+  // Rewrites one word (key/value split into content and functional parts).
+  auto rewrite_word = [&](std::string_view key, std::string_view value,
+                          std::string_view content_key,
+                          std::string_view content_value) -> std::string {
+    if (grade_on && !AllKanjiAllowed(value, max_grade)) {
+      return std::string(key);  // The whole word in hiragana.
+    }
+    if (furigana_on && !content_key.empty() &&
+        content_value.size() <= value.size() &&
+        value.substr(0, content_value.size()) == content_value &&
+        ContainsKanji(content_value) && content_value != content_key) {
+      return absl::StrCat(content_value, open, content_key, close,
+                          value.substr(content_value.size()));
+    }
+    return std::string(value);
+  };
+
+  // A candidate can hold several words (e.g. 学校で|勉強を); handle each word
+  // separately so that taught words keep their kanji.
+  std::string new_value;
+  if (candidate->inner_segment_boundary.empty()) {
+    new_value = rewrite_word(candidate->key, candidate->value,
+                             candidate->content_key, candidate->content_value);
+  } else {
+    for (const auto& word : candidate->inner_segments()) {
+      new_value += rewrite_word(word.GetKey(), word.GetValue(),
+                                word.GetContentKey(), word.GetContentValue());
     }
   }
-  if (changed) {
-    candidate->attributes |= converter::Attribute::NO_LEARNING;
+  if (new_value == candidate->value) return false;
+
+  if (candidate->inner_segment_boundary.empty() &&
+      new_value.size() >= candidate->value.size() - candidate->content_value.size() &&
+      new_value.ends_with(candidate->functional_value())) {
+    // Keep the content/functional split for a single word.
+    candidate->content_value = new_value.substr(
+        0, new_value.size() - candidate->functional_value().size());
+  } else {
+    candidate->content_value = new_value;
+    candidate->content_key = candidate->key;
   }
-  return changed;
+  candidate->value = std::move(new_value);
+  candidate->inner_segment_boundary.clear();
+  candidate->proper_noun_spans.clear();
+  candidate->attributes |= converter::Attribute::NO_LEARNING;
+  return true;
 }
 
 bool ElmoSchoolRewriter::Rewrite(const ConversionRequest& request,

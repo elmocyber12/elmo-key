@@ -339,6 +339,16 @@ bool ElmoAiRewriter::CleanAnswer(ElmoRewriteMode mode,
       break;
     }
   }
+  // The prompt wraps the text in 「」; drop a bracket the model echoed
+  // without its pair (e.g. "The meeting ... 3:00 PM.」").
+  if (!Contains(original, "」") && !Contains(s, "「")) {
+    while (s.size() >= 3 && s.substr(s.size() - 3) == "」") {
+      s = Trim(std::string_view(s).substr(0, s.size() - 3));
+    }
+  }
+  if (!Contains(original, "「") && !Contains(s, "」")) {
+    while (StartsWith(s, "「")) s = Trim(std::string_view(s).substr(3));
+  }
   if (s.empty()) return false;
   if (s.size() > original.size() * 6 + 200) return false;
 

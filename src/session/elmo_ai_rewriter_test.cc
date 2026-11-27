@@ -53,6 +53,12 @@ TEST(ElmoAiRewriterTest, CleanAnswer) {
   EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(ElmoRewriteMode::kEnglish,
                                           "会議の時間が変わった", &ok_english));
 
+  // An unmatched closing bracket echoed from the prompt is removed.
+  std::string echoed = "The meeting time has been changed to 3:00 PM.」";
+  EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(
+      ElmoRewriteMode::kEnglish, "会議の時間が3時に変わりました", &echoed));
+  EXPECT_EQ(echoed, "The meeting time has been changed to 3:00 PM.");
+
   std::string empty = "  </s>";
   EXPECT_FALSE(
       ElmoAiRewriter::CleanAnswer(ElmoRewriteMode::kPlain, "テスト", &empty));
