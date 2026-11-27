@@ -7,7 +7,9 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <functional>
 #include <string_view>
+#include <vector>
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
@@ -34,6 +36,61 @@ bool ContainsKanji(std::string_view text) {
     if (IsKanji(c)) return true;
   }
   return false;
+}
+
+bool IsKanjiRunChar(char32_t c) {
+  return c == kIterationMark || IsKanji(c);
+}
+
+char32_t ToHiragana(char32_t c) {
+  return (c >= 0x30A1 && c <= 0x30F6) ? c - 0x60 : c;
+}
+
+// One run of the surface: kanji (with its reading) or other characters.
+struct Run {
+  bool kanji = false;
+  std::u32string text;
+  std::u32string reading;  // Only for kanji runs.
+};
+
+// Aligns the kanji runs of `value` with the reading `key`, using the non-kanji
+// runs as anchors (学校で勉強を / がっこうでべんきょうを ->
+// [学校=がっこう][で][勉強=べんきょう][を]).  Returns false when the surface
+// cannot be explained by the reading.
+bool AlignRuns(const std::u32string& value, const std::u32string& key,
+               std::vector<Run>* runs) {
+  runs->clear();
+  for (const char32_t c : value) {
+    const bool k = IsKanjiRunChar(c);
+    if (runs->empty() || runs->back().kanji != k) runs->push_back({k, {}, {}});
+    runs->back().text.push_back(c);
+  }
+  std::u32string hira_key;
+  for (const char32_t c : key) hira_key.push_back(ToHiragana(c));
+  // Depth-first search over reading lengths for kanji runs.
+  const std::function<bool(size_t, size_t)> match = [&](size_t r,
+                                                        size_t pos) -> bool {
+    if (r == runs->size()) return pos == hira_key.size();
+    Run& run = (*runs)[r];
+    if (!run.kanji) {
+      if (pos + run.text.size() > hira_key.size()) return false;
+      for (size_t i = 0; i < run.text.size(); ++i) {
+        if (ToHiragana(run.text[i]) != hira_key[pos + i]) return false;
+      }
+      return match(r + 1, pos + run.text.size());
+    }
+    // Each kanji reads as 1..4 kana.
+    const size_t min_len = run.text.size();
+    const size_t max_len = run.text.size() * 4;
+    for (size_t len = min_len; len <= max_len && pos + len <= hira_key.size();
+         ++len) {
+      run.reading = hira_key.substr(pos, len);
+      if (match(r + 1, pos + len)) return true;
+    }
+    run.reading.clear();
+    return false;
+  };
+  return match(0, 0);
 }
 
 }  // namespace
@@ -78,6 +135,30 @@ bool ElmoSchoolRewriter::RewriteCandidate(
   auto rewrite_word = [&](std::string_view key, std::string_view value,
                           std::string_view content_key,
                           std::string_view content_value) -> std::string {
+    // Preferred: align each kanji run with its reading, so that taught words
+    // keep their kanji and furigana goes right after each kanji run.
+    std::vector<Run> runs;
+    if (ContainsKanji(value) &&
+        AlignRuns(Util::Utf8ToUtf32(value), Util::Utf8ToUtf32(key), &runs)) {
+      std::string out;
+      for (const Run& run : runs) {
+        const std::string text = Util::Utf32ToUtf8(run.text);
+        if (!run.kanji) {
+          out += text;
+          continue;
+        }
+        const std::string reading = Util::Utf32ToUtf8(run.reading);
+        if (grade_on && !AllKanjiAllowed(text, max_grade)) {
+          out += reading;
+        } else if (furigana_on) {
+          absl::StrAppend(&out, text, open, reading, close);
+        } else {
+          out += text;
+        }
+      }
+      return out;
+    }
+    // Fallback: the whole word.
     if (grade_on && !AllKanjiAllowed(value, max_grade)) {
       return std::string(key);  // The whole word in hiragana.
     }

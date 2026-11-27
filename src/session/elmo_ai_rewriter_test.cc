@@ -64,6 +64,25 @@ TEST(ElmoAiRewriterTest, CleanAnswer) {
       ElmoAiRewriter::CleanAnswer(ElmoRewriteMode::kPlain, "テスト", &empty));
 }
 
+TEST(ElmoAiRewriterTest, CleanAnswerRejectsInventedNumbers) {
+  // Seen on a real PC: an invented date in easy Japanese.
+  std::string invented = "運動会は、雨がふったら、９月２２日に延期します。";
+  EXPECT_FALSE(ElmoAiRewriter::CleanAnswer(
+      ElmoRewriteMode::kEasy, "運動会は雨天の場合翌日に順延します", &invented));
+  // Digits that are in the original are fine.
+  std::string kept = "締め切りは 11月 30日 です。";
+  EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(
+      ElmoRewriteMode::kEasy, "提出期限は11月30日です。", &kept));
+  // Kanji numerals in the original may become digits.
+  std::string numeral = "会議は 10日に あります。";
+  EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(
+      ElmoRewriteMode::kEasy, "会議は十日に開催します。", &numeral));
+  // English may rewrite times.
+  std::string english = "The meeting starts at 3:00 p.m.";
+  EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(
+      ElmoRewriteMode::kEnglish, "会議は15時に始まります。", &english));
+}
+
 }  // namespace
 }  // namespace session
 }  // namespace mozc

@@ -51,7 +51,7 @@ struct ModeSpec {
 constexpr ModeSpec kPoliteSpec = {
     "あなたは日本語の文章を整えるアシスタントです。"
     "ユーザーが送る文を、社内外のビジネスメールで使える丁寧な日本語（敬語）に"
-    "書き直してください。意味は変えず、情報を足さず、書き直した文だけを"
+    "書き直してください。意味は変えず、情報（日付・時刻・数字など）を足さず、書き直した文だけを"
     "出力してください。",
     "次の文を丁寧な敬語に書き直してください。文への返事はせず、"
     "書き直した文だけを出力してください。",
@@ -75,7 +75,7 @@ constexpr ModeSpec kEnglishSpec = {
 constexpr ModeSpec kPlainSpec = {
     "あなたは日本語の文章を整えるアシスタントです。"
     "ユーザーが送る文を、報告書や議事録で使う「だ・である」調の文に書き直して"
-    "ください。意味は変えず、情報を足さず、書き直した文だけを出力してください。",
+    "ください。意味は変えず、情報（日付・時刻・数字など）を足さず、書き直した文だけを出力してください。",
     "次の文を「だ・である」調に書き直してください。文への返事はせず、"
     "書き直した文だけを出力してください。",
     {{"会議の開始時刻が15時に変更となりました。",
@@ -88,6 +88,7 @@ constexpr ModeSpec kEasySpec = {
     "ユーザーが送る文を、子どもや日本語に慣れていない人にも分かる、短くて"
     "やさしい日本語に書き直してください。難しい言葉はやさしい言葉に言い換え、"
     "一文を短くし、「です・ます」で書いてください。意味は変えず、"
+    "元の文にない日付・時刻・数字・情報を足さず、"
     "書き直した文だけを出力してください。",
     "次の文をやさしい日本語に書き直してください。文への返事はせず、"
     "書き直した文だけを出力してください。",
@@ -370,6 +371,42 @@ bool ElmoAiRewriter::CleanAnswer(ElmoRewriteMode mode,
            {"かしこまりました", "承知いたしました", "承知しました",
             "了解いたしました", "了解しました", "ありがとうございます"}) {
         if (StartsWith(s, reply)) return false;
+      }
+    }
+  }
+  // Reject invented numbers (dates, times, amounts): every digit in the
+  // answer must also appear in the original.  The model may convert kanji
+  // numerals to digits, so kanji numerals in the original allow any digit.
+  {
+    auto digits_of = [](std::string_view text) {
+      std::string d;
+      for (size_t i = 0; i < text.size(); ++i) {
+        const unsigned char c = static_cast<unsigned char>(text[i]);
+        if (c >= '0' && c <= '9') {
+          d.push_back(static_cast<char>(c));
+        } else if (c == 0xEF && i + 2 < text.size() &&
+                   static_cast<unsigned char>(text[i + 1]) == 0xBC &&
+                   static_cast<unsigned char>(text[i + 2]) >= 0x90 &&
+                   static_cast<unsigned char>(text[i + 2]) <= 0x99) {
+          d.push_back(static_cast<char>(
+              '0' + (static_cast<unsigned char>(text[i + 2]) - 0x90)));
+          i += 2;
+        }
+      }
+      return d;
+    };
+    const std::string original_digits = digits_of(original);
+    bool original_has_kanji_numeral = false;
+    for (const std::string_view numeral :
+         {"一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "百",
+          "千", "万", "〇", "零"}) {
+      if (Contains(original, numeral)) original_has_kanji_numeral = true;
+    }
+    // English often rewrites times (15時 -> 3:00 p.m.), so only Japanese
+    // rewrites are checked.
+    if (mode != ElmoRewriteMode::kEnglish && !original_has_kanji_numeral) {
+      for (const char d : digits_of(s)) {
+        if (original_digits.find(d) == std::string::npos) return false;
       }
     }
   }
