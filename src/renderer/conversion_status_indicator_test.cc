@@ -14,11 +14,11 @@ TEST(ConversionStatusIndicatorTest, DefaultSettingsAndExplicitOverrides) {
   EXPECT_FALSE(config.has_show_conversion_status_indicator());
   EXPECT_TRUE(config.show_conversion_status_indicator());
   const auto& style = config.conversion_status_indicator_style();
-  EXPECT_EQ(style.width(), 56u);
-  EXPECT_EQ(style.height(), 22u);
-  EXPECT_EQ(style.font_size(), 11u);
-  EXPECT_EQ(style.zenz_pending_color(), 0x847438u);
-  EXPECT_EQ(style.zenz_color(), 0x338d85u);
+  EXPECT_EQ(style.width(), 46u);
+  EXPECT_EQ(style.height(), 18u);
+  EXPECT_EQ(style.font_size(), 9u);
+  EXPECT_EQ(style.zenz_pending_color(), 0xf29600u);
+  EXPECT_EQ(style.zenz_color(), 0x60c0bdu);
 
   // A stored opt-out must not be silently changed by the new default.
   config.set_show_conversion_status_indicator(false);
