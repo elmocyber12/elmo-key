@@ -550,6 +550,60 @@
           </div>
         </details>
 
+        <details id="faq-phrases">
+          <summary>決まり文句をすばやく入力したい（定型文）
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p>短い読みで、メールの決まり文句が候補に出ます（1.1.1 以降）。<kbd>Space</kbd> で候補を開いて選んでください。</p>
+            <ul>
+              <li>「おせ」→ お世話になっております。／「いつおせ」→ いつもお世話になっております。</li>
+              <li>「よろ」→ よろしくお願いいたします。／「ひきよろ」→ 引き続きよろしくお願いいたします。</li>
+              <li>「おつ」→ お疲れさまです。／「ごかく」→ ご確認のほどよろしくお願いいたします。</li>
+              <li>「とりいそ」→ 取り急ぎご連絡まで。／「おりかえ」→ 確認してから折り返しご連絡いたします。</li>
+            </ul>
+            <p>書画カメラ、電子黒板、GIGAスクール構想など、教育関係の言葉も最初から入っています。</p>
+          </div>
+        </details>
+
+        <details id="faq-school">
+          <summary>学校向けの機能（学年別漢字・ふりがな）
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p>設定画面の <span class="ui">入力補助</span> タブ →「学校向け」で選べます（1.1.1 以降）。</p>
+            <ul>
+              <li><strong>学年別漢字モード</strong>：選んだ学年（小学 1〜6 年）までに習う漢字だけを使います。それ以外の漢字を含む言葉はひらがなで表示します（例：小学 2 年なら「勉強」→「べんきょう」）。文部科学省の学年別漢字配当表にもとづいています。</li>
+              <li><strong>ふりがなを付ける</strong>：「漢字（かんじ）」の形で読みを付けて入力します。</li>
+            </ul>
+            <p>どちらかを使っている間は、AI ライブ補正は働きません。</p>
+          </div>
+        </details>
+
+        <details id="faq-ai-rewrite">
+          <summary>AI で文章を書き直したい（丁寧語・英語など、試験版）
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
+          </summary>
+          <div class="answer">
+            <p><strong>試験版（1.2.2）の機能です。</strong>文字を打っている途中（確定する前）に次のキーを押すと、AI が書き直します。<kbd>Enter</kbd> で確定、<kbd>Esc</kbd> で元の文に戻ります。</p>
+            <ul>
+              <li><kbd>Ctrl</kbd> + <kbd>T</kbd>：丁寧な文章（敬語）</li>
+              <li><kbd>Ctrl</kbd> + <kbd>E</kbd>：英語</li>
+              <li><kbd>Ctrl</kbd> + <kbd>R</kbd>：「だ・である」調</li>
+              <li><kbd>Ctrl</kbd> + <kbd>Y</kbd>：やさしい日本語</li>
+            </ul>
+            <p>使うには、次の準備が必要です。</p>
+            <ol>
+              <li>試験版の ELMO_key を、<a href="https://github.com/elmocyber12/elmo-key/releases">すべてのリリース</a>の中の「Pre-release」と書かれた版からダウンロードしてインストールします（上のダウンロードボタンは、試験版ではない版です）。</li>
+              <li>AI のモデル（約 2GB）をダウンロードします：<a href="https://huggingface.co/mmnga/sarashina2.2-3b-instruct-v0.1-gguf/resolve/main/sarashina2.2-3b-instruct-v0.1-Q4_K_M.gguf">sarashina2.2-3b-instruct-v0.1-Q4_K_M.gguf</a>（SB Intuitions 社のモデル、MIT ライセンス）。</li>
+              <li>エクスプローラーのアドレス欄に <code>%LOCALAPPDATA%</code> と入れて開き、<code>ELMO_key\models</code> フォルダーを作って、ダウンロードしたファイルを入れます。</li>
+              <li>設定画面の <span class="ui">入力補助</span> タブ →「AI で書き直す（試験版）」にチェックを入れて <span class="ui">OK</span> を押します。</li>
+            </ol>
+            <p>書き直しは PC の中だけで行い、文章を外に送りません。最初の 1 回は AI の準備に数十秒かかります。メモリ 8GB 以上の PC を推奨します。小さな AI なので、意味が変わったり不自然になったりすることがあります。<strong>出た文は必ず確認してから使ってください。</strong></p>
+            <p>機能をオフにしている間、<kbd>Ctrl</kbd> + <kbd>T</kbd>・<kbd>Ctrl</kbd> + <kbd>E</kbd> はこれまでどおり（半角英数・カーソル移動など）に働きます。</p>
+          </div>
+        </details>
+
         <details>
           <summary>Mozkey や Mozc と一緒に使えますか？
             <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
