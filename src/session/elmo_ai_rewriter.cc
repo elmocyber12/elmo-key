@@ -78,7 +78,8 @@ constexpr ModeSpec kEnglishSpec = {
 constexpr ModeSpec kPlainSpec = {
     "あなたは日本語の文章を整えるアシスタントです。"
     "ユーザーが送る文を、報告書や議事録で使う「だ・である」調の文に書き直して"
-    "ください。意味は変えず、情報（日付・時刻・数字など）を足さず、書き直した文だけを出力してください。",
+    "ください。意味は変えず、情報（日付・時刻・数字など）を足さず、"
+    "説明や注釈は書かず、書き直した文だけを出力してください。",
     "次の文を「だ・である」調に書き直してください。文への返事はせず、"
     "書き直した文だけを出力してください。",
     {{"会議の開始時刻が15時に変更となりました。",
@@ -92,13 +93,15 @@ constexpr ModeSpec kEasySpec = {
     "やさしい日本語に書き直してください。難しい言葉はやさしい言葉に言い換え、"
     "一文を短くし、「です・ます」で書いてください。意味は変えず、"
     "元の文にない日付・時刻・数字・情報を足さず、"
-    "書き直した文だけを出力してください。",
+    "説明や注釈、別の言い方の案は書かず、書き直した文を 1 通りだけ"
+    "出力してください。もともとやさしい文は、ほとんどそのまま返してください。",
     "次の文をやさしい日本語に書き直してください。文への返事はせず、"
     "書き直した文だけを出力してください。",
     {{"明日は荒天が予想されるため、休校とします。",
       "あしたは 天気が とても 悪く なります。学校は 休みです。"},
      {"提出期限は今月末日です。",
-      "今月の 最後の 日までに 出して ください。"}},
+      "今月の 最後の 日までに 出して ください。"},
+     {"了解しました", "わかりました。"}},
 };
 
 const ModeSpec& SpecFor(ElmoRewriteMode mode) {
@@ -360,6 +363,30 @@ bool ElmoAiRewriter::CleanAnswer(ElmoRewriteMode mode,
        {"\n\n", "(Note", "(note", "Note:", "（注"}) {
     const size_t at = s.find(note);
     if (at != std::string::npos && at > 0) s = Trim(std::string_view(s).substr(0, at));
+  }
+  if (mode != ElmoRewriteMode::kEnglish) {
+    // Japanese rewrites: keep the first line, and drop a parenthesized note
+    // after the sentence ("…します。（すでに…）") or an explanation
+    // ("（注", "（より…", "※…").  Seen on a real PC with easy Japanese.
+    const size_t newline = s.find('\n');
+    if (newline != std::string::npos && newline > 0) s = Trim(std::string_view(s).substr(0, newline));
+    const size_t note_after_period = s.find("。（");
+    if (note_after_period != std::string::npos) {
+      s = s.substr(0, note_after_period + std::string_view("。").size());
+    }
+    for (const std::string_view note :
+         {"（より", "（もし", "（ただし", "（元の", "（すでに", "※"}) {
+      const size_t at = s.find(note);
+      if (at != std::string::npos && at > 0) s = Trim(std::string_view(s).substr(0, at));
+    }
+    // Latin letters that were not in the original ("… soon …") mean the
+    // answer is not a Japanese rewrite.
+    auto has_latin = [](std::string_view t) {
+      return std::any_of(t.begin(), t.end(), [](char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+      });
+    };
+    if (has_latin(s) && !has_latin(original)) return false;
   }
   if (s.empty()) return false;
   if (s.size() > original.size() * 6 + 200) return false;

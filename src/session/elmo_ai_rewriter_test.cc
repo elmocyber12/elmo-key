@@ -37,6 +37,29 @@ TEST(ElmoAiRewriterEnglishTest, NotesAreCutAndMetaAnswersRejected) {
   EXPECT_NE(json.find("Thank you for your cooperation."), std::string::npos);
 }
 
+// Seen with easy Japanese: notes after the sentence, alternatives on later
+// lines, and stray English words.
+TEST(ElmoAiRewriterEasyTest, NotesAlternativesAndLatinAreHandled) {
+  std::string note = "よろしく お願いします。（すでに理解している場合は、そのままで OK です。）";
+  EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(ElmoRewriteMode::kEasy,
+                                          "よろしくお願いします", &note));
+  EXPECT_EQ(note, "よろしく お願いします。");
+
+  std::string lines =
+      "インフルエンザが 広がっています。\n\n（よりやさしい表現にすると：…）";
+  EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(
+      ElmoRewriteMode::kEasy, "インフルエンザが流行しています", &lines));
+  EXPECT_EQ(lines, "インフルエンザが 広がっています。");
+
+  std::string latin = "資料は すでに 送りましたか？もしまだなら、 soon 送ります。";
+  EXPECT_FALSE(ElmoAiRewriter::CleanAnswer(ElmoRewriteMode::kEasy,
+                                           "資料を送ります", &latin));
+
+  const std::string json =
+      ElmoAiRewriter::BuildChatRequestJson(ElmoRewriteMode::kEasy, "x");
+  EXPECT_NE(json.find("わかりました。"), std::string::npos);
+}
+
 }  // namespace
 namespace {
 
