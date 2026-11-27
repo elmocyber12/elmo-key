@@ -63,6 +63,13 @@ Composition	VirtualRight	MoveCursorRight
 Composition	VirtualEnter	Commit
 Composition	Ctrl r	ElmoAiRewritePlain
 Composition	Ctrl y	ElmoAiRewriteEasy
+Composition	Ctrl Shift F1	ElmoSetGrade1
+Composition	Ctrl Shift F2	ElmoSetGrade2
+Composition	Ctrl Shift F3	ElmoSetGrade3
+Composition	Ctrl Shift F4	ElmoSetGrade4
+Composition	Ctrl Shift F5	ElmoSetGrade5
+Composition	Ctrl Shift F6	ElmoSetGrade6
+Composition	Ctrl Shift F12	ElmoSetGrade0
 Conversion	Backspace	Cancel
 Conversion	Ctrl a	SegmentFocusFirst
 Conversion	Ctrl Backspace	Cancel
@@ -156,9 +163,23 @@ Precomposition	ON	IMEOn
 Precomposition	Shift Muhenkan	ToggleAlphanumericMode
 Precomposition	Shift Space	InsertAlternateSpace
 Precomposition	Space	ReconvertSelectionOrInsertSpace
+Precomposition	Ctrl Shift F1	ElmoSetGrade1
+Precomposition	Ctrl Shift F2	ElmoSetGrade2
+Precomposition	Ctrl Shift F3	ElmoSetGrade3
+Precomposition	Ctrl Shift F4	ElmoSetGrade4
+Precomposition	Ctrl Shift F5	ElmoSetGrade5
+Precomposition	Ctrl Shift F6	ElmoSetGrade6
+Precomposition	Ctrl Shift F12	ElmoSetGrade0
 Conversion	Ctrl Delete	DeleteSelectedCandidate
 Conversion	Ctrl r	ElmoAiRewritePlain
 Conversion	Ctrl y	ElmoAiRewriteEasy
+Conversion	Ctrl Shift F1	ElmoSetGrade1
+Conversion	Ctrl Shift F2	ElmoSetGrade2
+Conversion	Ctrl Shift F3	ElmoSetGrade3
+Conversion	Ctrl Shift F4	ElmoSetGrade4
+Conversion	Ctrl Shift F5	ElmoSetGrade5
+Conversion	Ctrl Shift F6	ElmoSetGrade6
+Conversion	Ctrl Shift F12	ElmoSetGrade0
 Prediction	Ctrl Delete	DeleteSelectedCandidate
 Suggestion	Down	PredictAndConvert
 Suggestion	Shift Enter	CommitFirstSuggestion

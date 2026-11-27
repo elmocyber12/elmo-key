@@ -292,6 +292,34 @@
         <translation>Rewrite in easy Japanese (AI, trial)</translation>
     </message>
     <message>
+        <source>ElmoSetGrade0</source>
+        <translation>Grade-level kanji: off</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade1</source>
+        <translation>Grade-level kanji: grade 1</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade2</source>
+        <translation>Grade-level kanji: grade 2</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade3</source>
+        <translation>Grade-level kanji: grade 3</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade4</source>
+        <translation>Grade-level kanji: grade 4</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade5</source>
+        <translation>Grade-level kanji: grade 5</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade6</source>
+        <translation>Grade-level kanji: grade 6</translation>
+    </message>
+    <message>
         <source>Return to normal conversion must be used alone.</source>
         <translation>Return to normal conversion must be used alone.</translation>
     </message>

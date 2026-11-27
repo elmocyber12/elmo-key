@@ -854,6 +854,8 @@ class Session {
   bool ElmoAiRewriteInterceptKey(mozc::commands::Command* command,
                                  bool* result);
   void ElmoAiRewriteClear();
+  // ELMO_key: sets and saves the grade-level kanji mode (0 = off).
+  bool ElmoSetGrade(mozc::commands::Command* command, int grade);
   void ElmoAiRewriteOutputPreedit(mozc::commands::Command* command,
                                   absl::string_view value, bool pending);
   bool CommitZenzLiveCorrectionResult(mozc::commands::Command* command);

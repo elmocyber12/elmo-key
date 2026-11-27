@@ -292,6 +292,34 @@
         <translation>やさしい日本語に書き直す（AI・試験版）</translation>
     </message>
     <message>
+        <source>ElmoSetGrade0</source>
+        <translation>学年別漢字モードを解除</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade1</source>
+        <translation>学年別漢字モード：小学1年</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade2</source>
+        <translation>学年別漢字モード：小学2年</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade3</source>
+        <translation>学年別漢字モード：小学3年</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade4</source>
+        <translation>学年別漢字モード：小学4年</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade5</source>
+        <translation>学年別漢字モード：小学5年</translation>
+    </message>
+    <message>
+        <source>ElmoSetGrade6</source>
+        <translation>学年別漢字モード：小学6年</translation>
+    </message>
+    <message>
         <source>Return to normal conversion must be used alone.</source>
         <translation>通常のELMO_key変換に戻す操作は単独で指定してください。</translation>
     </message>

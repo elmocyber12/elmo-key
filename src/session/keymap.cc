@@ -681,6 +681,20 @@ void KeyMapManager::InitCommandData() {
   RegisterPrecompositionCommand("Revert", PrecompositionState::REVERT);
   RegisterPrecompositionCommand("Undo", PrecompositionState::UNDO);
   RegisterPrecompositionCommand("Reconvert", PrecompositionState::RECONVERT);
+  RegisterPrecompositionCommand("ElmoSetGrade0",
+                                 PrecompositionState::ELMO_SET_GRADE_0);
+  RegisterPrecompositionCommand("ElmoSetGrade1",
+                                 PrecompositionState::ELMO_SET_GRADE_1);
+  RegisterPrecompositionCommand("ElmoSetGrade2",
+                                 PrecompositionState::ELMO_SET_GRADE_2);
+  RegisterPrecompositionCommand("ElmoSetGrade3",
+                                 PrecompositionState::ELMO_SET_GRADE_3);
+  RegisterPrecompositionCommand("ElmoSetGrade4",
+                                 PrecompositionState::ELMO_SET_GRADE_4);
+  RegisterPrecompositionCommand("ElmoSetGrade5",
+                                 PrecompositionState::ELMO_SET_GRADE_5);
+  RegisterPrecompositionCommand("ElmoSetGrade6",
+                                 PrecompositionState::ELMO_SET_GRADE_6);
   RegisterPrecompositionCommand(
       "ReconvertSelectionOrInsertSpace",
       PrecompositionState::RECONVERT_SELECTION_OR_INSERT_SPACE);
@@ -768,6 +782,20 @@ void KeyMapManager::InitCommandData() {
                              CompositionState::ELMO_AI_REWRITE_PLAIN);
   RegisterCompositionCommand("ElmoAiRewriteEasy",
                              CompositionState::ELMO_AI_REWRITE_EASY);
+  RegisterCompositionCommand("ElmoSetGrade0",
+                              CompositionState::ELMO_SET_GRADE_0);
+  RegisterCompositionCommand("ElmoSetGrade1",
+                              CompositionState::ELMO_SET_GRADE_1);
+  RegisterCompositionCommand("ElmoSetGrade2",
+                              CompositionState::ELMO_SET_GRADE_2);
+  RegisterCompositionCommand("ElmoSetGrade3",
+                              CompositionState::ELMO_SET_GRADE_3);
+  RegisterCompositionCommand("ElmoSetGrade4",
+                              CompositionState::ELMO_SET_GRADE_4);
+  RegisterCompositionCommand("ElmoSetGrade5",
+                              CompositionState::ELMO_SET_GRADE_5);
+  RegisterCompositionCommand("ElmoSetGrade6",
+                              CompositionState::ELMO_SET_GRADE_6);
   if (kCompositionModeXCommandSupported) {
     RegisterCompositionCommand(kCommandStringCompositionModeHiragana,
                                CompositionState::COMPOSITION_MODE_HIRAGANA);
@@ -814,6 +842,20 @@ void KeyMapManager::InitCommandData() {
                             ConversionState::ELMO_AI_REWRITE_PLAIN);
   RegisterConversionCommand("ElmoAiRewriteEasy",
                             ConversionState::ELMO_AI_REWRITE_EASY);
+  RegisterConversionCommand("ElmoSetGrade0",
+                             ConversionState::ELMO_SET_GRADE_0);
+  RegisterConversionCommand("ElmoSetGrade1",
+                             ConversionState::ELMO_SET_GRADE_1);
+  RegisterConversionCommand("ElmoSetGrade2",
+                             ConversionState::ELMO_SET_GRADE_2);
+  RegisterConversionCommand("ElmoSetGrade3",
+                             ConversionState::ELMO_SET_GRADE_3);
+  RegisterConversionCommand("ElmoSetGrade4",
+                             ConversionState::ELMO_SET_GRADE_4);
+  RegisterConversionCommand("ElmoSetGrade5",
+                             ConversionState::ELMO_SET_GRADE_5);
+  RegisterConversionCommand("ElmoSetGrade6",
+                             ConversionState::ELMO_SET_GRADE_6);
   RegisterConversionCommand("Backspace", ConversionState::BACKSPACE);
   RegisterConversionCommand("IMEOff", ConversionState::IME_OFF);
   RegisterConversionCommand("IMEOn", ConversionState::IME_ON);

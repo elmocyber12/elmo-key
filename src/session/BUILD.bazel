@@ -216,6 +216,7 @@ mozc_cc_library(
     deps = [
         ":elmo_ai_rewriter",
         ":ime_context",
+        "//config:config_handler",
         ":key_event_transformer",
         ":keymap",
         ":vertical_writing_key_transform",

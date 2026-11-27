@@ -107,7 +107,32 @@ int StatusFontHeightPx(
   return std::max(1, std::max(minimum, base - reduction));
 }
 
+// ELMO_key: grade-level kanji mode of the latest output (0 = off).  The
+// renderer draws on a single UI thread, so a file-level value is enough.
+uint32_t g_elmo_kanji_grade = 0;
+
+std::wstring StatusTextBase(ConversionDisplayStatus state,
+    config::Config::ConversionStatusIndicatorLabel label);
+
+// Appends the grade (e.g. "ELMO_key 小2", symbol "E2") so that the user can
+// see which grade-level kanji mode is on while typing.
 std::wstring StatusText(ConversionDisplayStatus state,
+    config::Config::ConversionStatusIndicatorLabel label) {
+  std::wstring text = StatusTextBase(state, label);
+  if (text.empty() || g_elmo_kanji_grade < 1 || g_elmo_kanji_grade > 6) {
+    return text;
+  }
+  const wchar_t digit = static_cast<wchar_t>(L'0' + g_elmo_kanji_grade);
+  if (label == config::Config::CONVERSION_STATUS_SYMBOL) {
+    text.push_back(digit);
+  } else {
+    text += L" 小";
+    text.push_back(digit);
+  }
+  return text;
+}
+
+std::wstring StatusTextBase(ConversionDisplayStatus state,
     config::Config::ConversionStatusIndicatorLabel label) {
   if (label == config::Config::CONVERSION_STATUS_COLOR_ONLY) return L"";
   if (label == config::Config::CONVERSION_STATUS_SYMBOL) {
@@ -256,6 +281,8 @@ void ConversionStatusWindow::OnUpdate(
     const commands::RendererCommand& command, const LayoutManager& layout,
     HWND ruby, HWND candidate) {
   const auto settings = config::ConfigHandler::GetSharedConfig();
+  g_elmo_kanji_grade =
+      command.has_output() ? command.output().elmo_kanji_grade() : 0;
   // Suppress the badge for active candidate selection, not for an
   // unfocused passive suggestion accompanying live conversion. The latter
   // deliberately coexists with the ruby window.

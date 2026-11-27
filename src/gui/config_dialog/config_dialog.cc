@@ -335,7 +335,9 @@ ConfigDialog::ConfigDialog()
         QString::fromUtf8(
             "学年別漢字モードでは、選んだ学年までに習う漢字だけを使い、"
             "それ以外の漢字を含む言葉はひらがなで表示します。"
-            "どちらかを使っている間は、AI ライブ補正は働きません。"),
+            "どちらかを使っている間は、AI ライブ補正は働きません。"
+            "Ctrl+Shift+F1〜F6 で小学 1〜6 年、Ctrl+Shift+F12 で解除に"
+            "すぐ切り替えられます（入力中の札に「小2」などと出ます）。"),
         group);
     note->setWordWrap(true);
     form->addRow(note);

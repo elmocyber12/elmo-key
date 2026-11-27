@@ -1539,6 +1539,8 @@ message Output {
   // must bound the text eventually written to Context::zenz_*_text.
   optional uint32 zenz_preceding_text_request_length = 1001 [default = 0];
   optional uint32 zenz_following_text_request_length = 1002 [default = 0];
+  // ELMO_key: current grade-level kanji mode (0 = off) for the input badge.
+  optional uint32 elmo_kanji_grade = 2001 [default = 0];
 
   reserved 19;  // Deprecated storage_entry
   reserved 20;  // Deprecated cloud_sync_status

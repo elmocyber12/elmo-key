@@ -57,6 +57,7 @@
 #include "engine/engine_interface.h"
 #include "protocol/commands.pb.h"
 #include "protocol/config.pb.h"
+#include "config/config_handler.h"
 #include "session/elmo_ai_rewriter.h"
 #include "session/ime_context.h"
 #include "session/key_event_transformer.h"
@@ -2818,6 +2819,20 @@ bool Session::ExecutePrecompositionCommand(
       return CommitFirstSuggestion(command);
     case keymap::PrecompositionState::PREDICT_AND_CONVERT:
       return PredictAndConvert(command);
+    case keymap::PrecompositionState::ELMO_SET_GRADE_0:
+      return ElmoSetGrade(command, 0);
+    case keymap::PrecompositionState::ELMO_SET_GRADE_1:
+      return ElmoSetGrade(command, 1);
+    case keymap::PrecompositionState::ELMO_SET_GRADE_2:
+      return ElmoSetGrade(command, 2);
+    case keymap::PrecompositionState::ELMO_SET_GRADE_3:
+      return ElmoSetGrade(command, 3);
+    case keymap::PrecompositionState::ELMO_SET_GRADE_4:
+      return ElmoSetGrade(command, 4);
+    case keymap::PrecompositionState::ELMO_SET_GRADE_5:
+      return ElmoSetGrade(command, 5);
+    case keymap::PrecompositionState::ELMO_SET_GRADE_6:
+      return ElmoSetGrade(command, 6);
 
     case keymap::PrecompositionState::NONE:
       if (HasUndoContext() &&
@@ -2974,6 +2989,20 @@ bool Session::ExecuteCompositionCommand(
     case keymap::CompositionState::ELMO_AI_REWRITE_PLAIN:
       return ElmoAiRewriteStart(
           command, static_cast<int>(ElmoRewriteMode::kPlain), false);
+    case keymap::CompositionState::ELMO_SET_GRADE_0:
+      return ElmoSetGrade(command, 0);
+    case keymap::CompositionState::ELMO_SET_GRADE_1:
+      return ElmoSetGrade(command, 1);
+    case keymap::CompositionState::ELMO_SET_GRADE_2:
+      return ElmoSetGrade(command, 2);
+    case keymap::CompositionState::ELMO_SET_GRADE_3:
+      return ElmoSetGrade(command, 3);
+    case keymap::CompositionState::ELMO_SET_GRADE_4:
+      return ElmoSetGrade(command, 4);
+    case keymap::CompositionState::ELMO_SET_GRADE_5:
+      return ElmoSetGrade(command, 5);
+    case keymap::CompositionState::ELMO_SET_GRADE_6:
+      return ElmoSetGrade(command, 6);
     case keymap::CompositionState::ELMO_AI_REWRITE_EASY:
       return ElmoAiRewriteStart(
           command, static_cast<int>(ElmoRewriteMode::kEasy), false);
@@ -3149,6 +3178,20 @@ bool Session::ExecuteConversionCommand(
     case keymap::ConversionState::ELMO_AI_REWRITE_PLAIN:
       return ElmoAiRewriteStart(
           command, static_cast<int>(ElmoRewriteMode::kPlain), true);
+    case keymap::ConversionState::ELMO_SET_GRADE_0:
+      return ElmoSetGrade(command, 0);
+    case keymap::ConversionState::ELMO_SET_GRADE_1:
+      return ElmoSetGrade(command, 1);
+    case keymap::ConversionState::ELMO_SET_GRADE_2:
+      return ElmoSetGrade(command, 2);
+    case keymap::ConversionState::ELMO_SET_GRADE_3:
+      return ElmoSetGrade(command, 3);
+    case keymap::ConversionState::ELMO_SET_GRADE_4:
+      return ElmoSetGrade(command, 4);
+    case keymap::ConversionState::ELMO_SET_GRADE_5:
+      return ElmoSetGrade(command, 5);
+    case keymap::ConversionState::ELMO_SET_GRADE_6:
+      return ElmoSetGrade(command, 6);
     case keymap::ConversionState::ELMO_AI_REWRITE_EASY:
       return ElmoAiRewriteStart(
           command, static_cast<int>(ElmoRewriteMode::kEasy), true);
@@ -3360,7 +3403,14 @@ bool Session::SendKeyConversionState(commands::Command* command) {
       (key_command == keymap::ConversionState::ELMO_AI_REWRITE_POLITE ||
        key_command == keymap::ConversionState::ELMO_AI_REWRITE_ENGLISH ||
        key_command == keymap::ConversionState::ELMO_AI_REWRITE_PLAIN ||
-       key_command == keymap::ConversionState::ELMO_AI_REWRITE_EASY)) {
+       key_command == keymap::ConversionState::ELMO_AI_REWRITE_EASY ||
+       key_command == keymap::ConversionState::ELMO_SET_GRADE_0 ||
+       key_command == keymap::ConversionState::ELMO_SET_GRADE_1 ||
+       key_command == keymap::ConversionState::ELMO_SET_GRADE_2 ||
+       key_command == keymap::ConversionState::ELMO_SET_GRADE_3 ||
+       key_command == keymap::ConversionState::ELMO_SET_GRADE_4 ||
+       key_command == keymap::ConversionState::ELMO_SET_GRADE_5 ||
+       key_command == keymap::ConversionState::ELMO_SET_GRADE_6)) {
     return ExecuteConversionCommand(key_command, command);
   }
 
@@ -11059,6 +11109,11 @@ void Session::MaybeUpdateCandidateActionFooter(
 }
 
 void Session::OutputMode(commands::Command* command) const {
+  // ELMO_key: let the input badge show the grade-level kanji mode.
+  if (const uint32_t grade = context_->GetConfig().elmo_kanji_grade();
+      grade > 0 && grade <= 6) {
+    command->mutable_output()->set_elmo_kanji_grade(grade);
+  }
   const commands::CompositionMode mode =
       ToCompositionMode(context_->composer().GetInputMode());
   const commands::CompositionMode comeback_mode =
@@ -11828,6 +11883,18 @@ bool Session::ElmoAiRewriteInterceptKey(commands::Command* command,
   // Any other key: drop the rewrite and continue with the original text.
   ElmoAiRewriteClear();
   return false;
+}
+
+bool Session::ElmoSetGrade(commands::Command* command, int grade) {
+  // Save it so that every application (and the settings dialog) uses it,
+  // and apply it to this session right away.
+  config::Config stored = config::ConfigHandler::GetCopiedConfig();
+  stored.set_elmo_kanji_grade(static_cast<uint32_t>(grade));
+  config::ConfigHandler::SetConfig(stored);
+  SetConfig(std::make_shared<const config::Config>(std::move(stored)));
+  command->mutable_output()->set_consumed(true);
+  OutputFromState(command);
+  return true;
 }
 
 }  // namespace session

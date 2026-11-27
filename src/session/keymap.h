@@ -98,6 +98,14 @@ struct PrecompositionState {
 
     // For search button on mobile device.
     IME_ACTION,
+    // ELMO_key: grade-level kanji mode (Ctrl+Shift+F1..F6, F12 = off).
+    ELMO_SET_GRADE_0,
+    ELMO_SET_GRADE_1,
+    ELMO_SET_GRADE_2,
+    ELMO_SET_GRADE_3,
+    ELMO_SET_GRADE_4,
+    ELMO_SET_GRADE_5,
+    ELMO_SET_GRADE_6,
   };
 };
 
@@ -156,6 +164,14 @@ struct CompositionState {
     ELMO_AI_REWRITE_ENGLISH,  // Ctrl+E (else MoveCursorToBeginning)
     ELMO_AI_REWRITE_PLAIN,    // Ctrl+R (else nothing)
     ELMO_AI_REWRITE_EASY,     // Ctrl+Y (else nothing)
+    // ELMO_key: grade-level kanji mode (Ctrl+Shift+F1..F6, F12 = off).
+    ELMO_SET_GRADE_0,
+    ELMO_SET_GRADE_1,
+    ELMO_SET_GRADE_2,
+    ELMO_SET_GRADE_3,
+    ELMO_SET_GRADE_4,
+    ELMO_SET_GRADE_5,
+    ELMO_SET_GRADE_6,
   };
 };
 
@@ -219,6 +235,14 @@ struct ConversionState {
     ELMO_AI_REWRITE_ENGLISH,  // Ctrl+E (else ConvertPrev)
     ELMO_AI_REWRITE_PLAIN,    // Ctrl+R
     ELMO_AI_REWRITE_EASY,     // Ctrl+Y
+    // ELMO_key: grade-level kanji mode (Ctrl+Shift+F1..F6, F12 = off).
+    ELMO_SET_GRADE_0,
+    ELMO_SET_GRADE_1,
+    ELMO_SET_GRADE_2,
+    ELMO_SET_GRADE_3,
+    ELMO_SET_GRADE_4,
+    ELMO_SET_GRADE_5,
+    ELMO_SET_GRADE_6,
   };
 };
 
