@@ -65,11 +65,59 @@ TEST(ElmoSchoolRewriterTest, Furigana) {
 
   converter::Candidate verb = MakeCandidate("かきます", "書きます", "かき", "書き");
   EXPECT_TRUE(rewriter.RewriteCandidate(0, 2, &verb));
-  EXPECT_EQ(verb.value, "書き(かき)ます");
+  EXPECT_EQ(verb.value, "書(か)きます");
 
   // No kanji, no furigana.
   converter::Candidate hira = MakeCandidate("ひらがな", "ひらがな", "ひらがな", "ひらがな");
   EXPECT_FALSE(rewriter.RewriteCandidate(0, 1, &hira));
+}
+
+TEST(ElmoSchoolRewriterTest, MultiWordCandidateIsHandledPerWord) {
+  ElmoSchoolRewriter rewriter;
+  // 学校で|勉強を : 学 and 校 are grade 1, 勉 is grade 3.
+  auto make = [] {
+    converter::Candidate c =
+        MakeCandidate("がっこうでべんきょうを", "学校で勉強を", "がっこうで",
+                      "学校で");
+    c.inner_segment_boundary = converter::InnerSegmentBoundaryBuilder()
+                                   .Add(15, 9, 12, 6)
+                                   .Add(18, 9, 15, 6)
+                                   .Build(c.key, c.value);
+    EXPECT_FALSE(c.inner_segment_boundary.empty());
+    return c;
+  };
+  converter::Candidate grade = make();
+  EXPECT_TRUE(rewriter.RewriteCandidate(2, 0, &grade));
+  EXPECT_EQ(grade.value, "学校でべんきょうを");
+
+  converter::Candidate furigana = make();
+  EXPECT_TRUE(rewriter.RewriteCandidate(0, 1, &furigana));
+  EXPECT_EQ(furigana.value, "学校（がっこう）で勉強（べんきょう）を");
+
+  converter::Candidate both = make();
+  EXPECT_TRUE(rewriter.RewriteCandidate(2, 1, &both));
+  EXPECT_EQ(both.value, "学校（がっこう）でべんきょうを");
+}
+
+TEST(ElmoSchoolRewriterTest, CandidateWithoutWordBoundariesIsAligned) {
+  ElmoSchoolRewriter rewriter;
+  auto make = [] {
+    return MakeCandidate("がっこうでべんきょうを", "学校で勉強を",
+                         "がっこうでべんきょうを", "学校で勉強を");
+  };
+  converter::Candidate grade = make();
+  EXPECT_TRUE(rewriter.RewriteCandidate(2, 0, &grade));
+  EXPECT_EQ(grade.value, "学校でべんきょうを");
+
+  converter::Candidate furigana = make();
+  EXPECT_TRUE(rewriter.RewriteCandidate(0, 1, &furigana));
+  EXPECT_EQ(furigana.value, "学校（がっこう）で勉強（べんきょう）を");
+
+  // Katakana in the surface is matched against the hiragana reading.
+  converter::Candidate kata = MakeCandidate("てすとをする", "テストを為る",
+                                            "てすとをする", "テストを為る");
+  EXPECT_TRUE(rewriter.RewriteCandidate(6, 0, &kata));
+  EXPECT_EQ(kata.value, "テストをする");
 }
 
 TEST(ElmoSchoolRewriterTest, GradeModeThenFurigana) {
