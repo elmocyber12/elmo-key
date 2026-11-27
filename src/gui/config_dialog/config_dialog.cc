@@ -366,7 +366,7 @@ ConfigDialog::ConfigDialog()
     }();
     auto* ai_note = new QLabel(
         QString::fromUtf8(
-            "文字を打っている途中（確定する前）に、Ctrl+T で丁寧な文章、"
+            "文字を打っている途中（確定する前）に、"
             "Ctrl+E で英語、Ctrl+R で「だ・である」調、Ctrl+Y でやさしい日本語"
             "に書き直します。Enter で確定、Esc で元の文に戻ります。"
             "書き直しには別にダウンロードする AI のモデル（約 2GB）が必要です。"
