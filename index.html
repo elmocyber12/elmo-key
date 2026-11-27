@@ -327,7 +327,7 @@
           <p class="el-caption hero-meta" aria-live="polite"><span>Windows 10 / 11（64 ビット）</span><span id="release-version">最新版</span><span id="release-size">約 110 MB</span><span id="release-date" hidden></span></p>
           <div class="notice notice--info el-caption trial-note" role="note">
             <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-info"/></svg>
-            <p><strong>試験版（v1.2.2）：</strong>入力中の文章を AI で丁寧語・英語・「だ・である」調・やさしい日本語に書き直す機能を試せます。<a href="https://github.com/elmocyber12/elmo-key/releases/download/v1.2.2/ELMO_key_x64.msi">試験版をダウンロード</a>／<a href="#faq-ai-rewrite" data-open-details>使い方と準備</a>（別に AI のモデル約 2GB が必要です）</p>
+            <p><strong>試験版（v1.2.10）：</strong>入力中の文章を AI で英語・「だ・である」調・やさしい日本語に書き直す機能を試せます。<a href="https://github.com/elmocyber12/elmo-key/releases/download/v1.2.10/ELMO_key_x64.msi">試験版をダウンロード</a>／<a href="#faq-ai-rewrite" data-open-details>使い方と準備</a>（別に AI のモデル約 2GB が必要です）</p>
           </div>
           <div class="notice notice--warning el-caption" role="note">
             <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-warn"/></svg>
@@ -584,17 +584,17 @@
               <li><strong>ふりがなを付ける</strong>：「漢字（かんじ）」の形で読みを付けて入力します。</li>
             </ul>
             <p>どちらかを使っている間は、AI ライブ補正は働きません。</p>
+            <p><strong>試験版（1.2.10）</strong>では、<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F1</kbd>〜<kbd>F6</kbd> で小学 1〜6 年、<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F12</kbd> で解除に、キーですぐ切り替えられます。入力中の札に「ELMO_key 小2」のように今の学年が出ます。ほかのアプリのショートカット（Word の <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F12</kbd> など）とぶつかるときは、設定画面の「一般」タブのキー設定で、別のキーに変えたり外したりできます。</p>
           </div>
         </details>
 
         <details id="faq-ai-rewrite">
-          <summary>AI で文章を書き直したい（丁寧語・英語など、試験版）
+          <summary>AI で文章を書き直したい（英語・やさしい日本語など、試験版）
             <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-down"/></svg>
           </summary>
           <div class="answer">
-            <p><strong>試験版（1.2.2）の機能です。</strong>文字を打っている途中（確定する前）に次のキーを押すと、AI が書き直します。<kbd>Enter</kbd> で確定、<kbd>Esc</kbd> で元の文に戻ります。</p>
+            <p><strong>試験版（1.2.10）の機能です。</strong>文字を打っている途中（確定する前）に次のキーを押すと、AI が書き直します。<kbd>Enter</kbd> で確定、<kbd>Esc</kbd> で元の文に戻ります。</p>
             <ul>
-              <li><kbd>Ctrl</kbd> + <kbd>T</kbd>：丁寧な文章（敬語）</li>
               <li><kbd>Ctrl</kbd> + <kbd>E</kbd>：英語</li>
               <li><kbd>Ctrl</kbd> + <kbd>R</kbd>：「だ・である」調</li>
               <li><kbd>Ctrl</kbd> + <kbd>Y</kbd>：やさしい日本語</li>
@@ -603,11 +603,11 @@
             <ol>
               <li>試験版の ELMO_key を、<a href="https://github.com/elmocyber12/elmo-key/releases">すべてのリリース</a>の中の「Pre-release」と書かれた版からダウンロードしてインストールします（上のダウンロードボタンは、試験版ではない版です）。</li>
               <li>AI のモデル（約 2GB）をダウンロードします：<a href="https://huggingface.co/mmnga/sarashina2.2-3b-instruct-v0.1-gguf/resolve/main/sarashina2.2-3b-instruct-v0.1-Q4_K_M.gguf">sarashina2.2-3b-instruct-v0.1-Q4_K_M.gguf</a>（SB Intuitions 社のモデル、MIT ライセンス）。</li>
-              <li>エクスプローラーのアドレス欄に <code>%LOCALAPPDATA%</code> と入れて開き、<code>ELMO_key\models</code> フォルダーを作って、ダウンロードしたファイルを入れます。</li>
+              <li>エクスプローラーのアドレス欄に <code>C:\ProgramData</code> と入れて開き、<code>ELMO_key</code> フォルダーとその中に <code>models</code> フォルダーを作って、ダウンロードしたファイルを入れます（<code>C:\ProgramData\ELMO_key\models</code>）。</li>
               <li>設定画面の <span class="ui">入力補助</span> タブ →「AI で書き直す（試験版）」にチェックを入れて <span class="ui">OK</span> を押します。</li>
             </ol>
             <p>書き直しは PC の中だけで行い、文章を外に送りません。最初の 1 回は AI の準備に数十秒かかります。メモリ 8GB 以上の PC を推奨します。小さな AI なので、意味が変わったり不自然になったりすることがあります。<strong>出た文は必ず確認してから使ってください。</strong></p>
-            <p>機能をオフにしている間、<kbd>Ctrl</kbd> + <kbd>T</kbd>・<kbd>Ctrl</kbd> + <kbd>E</kbd> はこれまでどおり（半角英数・カーソル移動など）に働きます。</p>
+            <p>機能をオフにしている間、<kbd>Ctrl</kbd> + <kbd>E</kbd> はこれまでどおり（カーソル移動など）に働きます。<kbd>Ctrl</kbd> + <kbd>T</kbd> は、いつでもこれまでどおり（半角英数に変換）です。</p>
           </div>
         </details>
 
