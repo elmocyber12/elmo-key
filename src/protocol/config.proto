@@ -817,6 +817,21 @@ message Config {
   optional bool show_conversion_status_indicator = 1045 [default = true];
   optional ConversionStatusIndicatorStyle conversion_status_indicator_style = 1046;
 
+  // ELMO_key-specific settings (2001-2099). Never reuse these numbers.
+  //
+  // Grade-level kanji mode for school use. 0 = off; 1-6 = only kanji taught
+  // up to that elementary school grade (MEXT grade-level kanji table, 2020)
+  // stay as kanji. Candidates containing any other kanji are shown in
+  // hiragana instead.
+  optional uint32 elmo_kanji_grade = 2001 [default = 0];
+  // Furigana output: append the reading after a converted word that contains
+  // kanji, e.g. "漢字（かんじ）". 0 = off, 1 = full-width parentheses,
+  // 2 = half-width parentheses.
+  optional uint32 elmo_furigana_style = 2002 [default = 0];
+  // AI rewrite (Ctrl+T polite Japanese / Ctrl+E English, trial feature).
+  // Off by default. The model file is downloaded separately.
+  optional bool use_elmo_ai_rewrite = 2003 [default = false];
+
   //////////////////////////////////////////////////////////////
   //
   // Cloud (300-319)

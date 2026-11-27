@@ -1567,6 +1567,7 @@ mozc_cc_library(
         ":correction_rewriter",
         ":date_rewriter",
         ":dice_rewriter",
+        ":elmo_school_rewriter",
         ":emoji_rewriter",
         ":emoticon_rewriter",
         ":english_variants_rewriter",
@@ -1785,6 +1786,37 @@ mozc_cc_test(
         ":ivs_variants_rewriter",
         "//converter:segments",
         "//request:conversion_request",
+        "//testing:gunit_main",
+    ],
+)
+
+# ELMO_key: grade-level kanji mode and furigana output.
+mozc_cc_library(
+    name = "elmo_school_rewriter",
+    srcs = ["elmo_school_rewriter.cc"],
+    hdrs = ["elmo_school_rewriter.h"],
+    textual_hdrs = ["elmo_grade_kanji_data.inc"],
+    deps = [
+        ":rewriter_interface",
+        "//base:util",
+        "//converter:attribute",
+        "//converter:segments",
+        "//protocol:config_cc_proto",
+        "//request:conversion_request",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+mozc_cc_test(
+    name = "elmo_school_rewriter_test",
+    size = "small",
+    srcs = ["elmo_school_rewriter_test.cc"],
+    deps = [
+        ":elmo_school_rewriter",
+        "//converter:attribute",
+        "//converter:segments",
         "//testing:gunit_main",
     ],
 )

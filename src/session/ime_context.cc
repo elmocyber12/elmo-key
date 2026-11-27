@@ -97,6 +97,16 @@ const commands::Request& ImeContext::GetRequest() const {
 
 void ImeContext::SetConfig(std::shared_ptr<const config::Config> config) {
   DCHECK(config);
+  // ELMO_key: the grade-level kanji mode and furigana output rewrite Mozc
+  // candidates; AI live correction would bypass them, so it is turned off in
+  // the effective config while either mode is on.  The saved config is not
+  // changed.
+  if ((config->elmo_kanji_grade() > 0 || config->elmo_furigana_style() > 0) &&
+      config->use_zenz_live_correction()) {
+    auto effective = std::make_shared<config::Config>(*config);
+    effective->set_use_zenz_live_correction(false);
+    config = std::move(effective);
+  }
   data_.config = std::move(config);
 
   if (converter_) {

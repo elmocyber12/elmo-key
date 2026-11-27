@@ -45,6 +45,7 @@
 #include "rewriter/correction_rewriter.h"
 #include "rewriter/dice_rewriter.h"
 #include "rewriter/emoji_rewriter.h"
+#include "rewriter/elmo_school_rewriter.h"
 #include "rewriter/emoticon_rewriter.h"
 #include "rewriter/english_variants_rewriter.h"
 #include "rewriter/environmental_filter_rewriter.h"
@@ -199,6 +200,8 @@ Rewriter::Rewriter(const engine::Modules& modules) {
   AddRewriter(std::make_unique<T13nPromotionRewriter>());
   AddRewriter(make_unique_from_tuples<EnvironmentalFilterRewriter>(
       data_manager.GetEmojiRewriterData()));
+  // ELMO_key: grade-level kanji mode and furigana output.
+  AddRewriter(std::make_unique<ElmoSchoolRewriter>());
   AddRewriter(std::make_unique<RemoveRedundantCandidateRewriter>());
   AddRewriter(make_unique_from_tuples<A11yDescriptionRewriter>(
       data_manager.GetA11yDescriptionRewriterData()));

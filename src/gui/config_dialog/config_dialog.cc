@@ -310,6 +310,45 @@ ConfigDialog::ConfigDialog()
           static_cast<int>(config::Config::WINDOWS_IME_ICON_DEFAULT)) {
   setupUi(this);
 
+  // ELMO_key: school features (grade-level kanji mode and furigana output)
+  // at the end of the input support tab.
+  {
+    auto* group = new QGroupBox(
+        QString::fromUtf8("学校向け（ELMO_key）"),
+        inputSupportScrollAreaWidgetContents);
+    group->setObjectName(QStringLiteral("elmoSchoolGroupBox"));
+    auto* form = new QFormLayout(group);
+    auto* grade = new QComboBox(group);
+    grade->setObjectName(QStringLiteral("elmoKanjiGradeComboBox"));
+    grade->addItem(QString::fromUtf8("使わない"), 0);
+    for (int g = 1; g <= 6; ++g) {
+      grade->addItem(QString::fromUtf8("小学%1年までの漢字").arg(g), g);
+    }
+    form->addRow(QString::fromUtf8("学年別漢字モード"), grade);
+    auto* furigana = new QComboBox(group);
+    furigana->setObjectName(QStringLiteral("elmoFuriganaComboBox"));
+    furigana->addItem(QString::fromUtf8("付けない"), 0);
+    furigana->addItem(QString::fromUtf8("漢字（かんじ）"), 1);
+    furigana->addItem(QString::fromUtf8("漢字(かんじ)"), 2);
+    form->addRow(QString::fromUtf8("ふりがなを付ける"), furigana);
+    auto* note = new QLabel(
+        QString::fromUtf8(
+            "学年別漢字モードでは、選んだ学年までに習う漢字だけを使い、"
+            "それ以外の漢字を含む言葉はひらがなで表示します。"
+            "どちらかを使っている間は、AI ライブ補正は働きません。"),
+        group);
+    note->setWordWrap(true);
+    form->addRow(note);
+    auto* content_layout = inputSupportContentLayout;
+    const int insert_at = std::max(0, content_layout->count() - 1);
+    content_layout->insertWidget(insert_at, group);
+    QObject::connect(grade, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                     this, [this](int) { EnableApplyButton(); });
+    QObject::connect(furigana,
+                     QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+                     [this](int) { EnableApplyButton(); });
+  }
+
   // Both scrollable tabs must preserve the native tab-page background and
   // avoid stylesheets that can affect checkbox and separator rendering.
   const auto prepare_scroll_area = [](QScrollArea* area, QWidget* contents) {
@@ -6163,6 +6202,18 @@ void ConfigDialog::ConvertFromProto(const config::Config &config) {
   SET_CHECKBOX(showLiveConversionRubyWindow,
                show_live_conversion_ruby_window);
 
+  // ELMO_key school features.
+  if (auto* grade = findChild<QComboBox*>(QStringLiteral("elmoKanjiGradeComboBox"))) {
+    const int index = grade->findData(
+        static_cast<int>(std::min<uint32_t>(config.elmo_kanji_grade(), 6)));
+    grade->setCurrentIndex(std::max(0, index));
+  }
+  if (auto* furigana = findChild<QComboBox*>(QStringLiteral("elmoFuriganaComboBox"))) {
+    const int index = furigana->findData(
+        static_cast<int>(std::min<uint32_t>(config.elmo_furigana_style(), 2)));
+    furigana->setCurrentIndex(std::max(0, index));
+  }
+
   SET_CHECKBOX(zenzLiveCorrectionCheckBox, use_zenz_live_correction);
   SET_CHECKBOX(zenzStrictReadingPreservationCheckBox,
                use_zenz_strict_reading_preservation);
@@ -6550,6 +6601,18 @@ void ConfigDialog::ConvertToProto(config::Config *config) const {
       static_cast<uint32_t>(liveConversionMinKeyLengthSpinBox->value()));
   GET_CHECKBOX(showLiveConversionRubyWindow,
                show_live_conversion_ruby_window);
+
+  // ELMO_key school features.
+  if (const auto* grade =
+          findChild<QComboBox*>(QStringLiteral("elmoKanjiGradeComboBox"))) {
+    config->set_elmo_kanji_grade(
+        static_cast<uint32_t>(std::max(0, grade->currentData().toInt())));
+  }
+  if (const auto* furigana =
+          findChild<QComboBox*>(QStringLiteral("elmoFuriganaComboBox"))) {
+    config->set_elmo_furigana_style(
+        static_cast<uint32_t>(std::max(0, furigana->currentData().toInt())));
+  }
 
   GET_CHECKBOX(zenzLiveCorrectionCheckBox, use_zenz_live_correction);
   GET_CHECKBOX(zenzStrictReadingPreservationCheckBox,
