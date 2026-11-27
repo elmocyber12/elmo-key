@@ -81,12 +81,20 @@ constexpr uint32_t kExpectedMozkeyDirectCommitKey =
     Config::DIRECT_COMMIT_CLOSE_BRACKET;
 
 void SetMozkeyProductDefaultsForTesting(Config* config) {
+  config->set_candidate_window_color_theme(
+      Config::RENDERER_WINDOW_COLOR_CUSTOM);
+  config->set_suggest_window_color_theme(Config::RENDERER_WINDOW_COLOR_CUSTOM);
+  config->set_ruby_window_color_theme(Config::RENDERER_WINDOW_COLOR_CUSTOM);
+  config->set_windows_mode_indicator_theme(
+      Config::WINDOWS_MODE_INDICATOR_THEME_CUSTOM);
   config->set_use_live_conversion(true);
+  config->set_live_conversion_delay_msec(100);
   config->set_show_live_conversion_ruby_window(true);
   config->set_show_candidate_window_on_initial_conversion(true);
-  config->set_use_direct_commit(true);
+  config->set_use_direct_commit(false);
   config->set_direct_commit_key(kExpectedMozkeyDirectCommitKey);
   config->set_use_zenz_live_correction(true);
+  config->set_zenz_live_correction_delay_msec(200);
   config->set_use_zenz_feedback_learning(true);
   config->set_use_zenz_feedback_recording(true);
   config->set_use_zenz_feedback_reuse(true);
@@ -110,19 +118,19 @@ void SetMozkeyProductDefaultsForTesting(Config* config) {
 
 void ExpectMozkeyProductDefaults(const Config& config) {
   EXPECT_TRUE(config.use_live_conversion());
-  EXPECT_EQ(config.live_conversion_delay_msec(), 228);
+  EXPECT_EQ(config.live_conversion_delay_msec(), 100);
   EXPECT_EQ(config.live_conversion_min_key_length(), 2);
   EXPECT_TRUE(config.show_live_conversion_ruby_window());
   EXPECT_TRUE(config.show_candidate_window_on_initial_conversion());
 
-  EXPECT_TRUE(config.use_direct_commit());
+  EXPECT_FALSE(config.use_direct_commit());
   EXPECT_EQ(config.direct_commit_key(), kExpectedMozkeyDirectCommitKey);
 
   EXPECT_TRUE(config.use_zenz_live_correction());
   EXPECT_FALSE(config.use_zenz_strict_reading_preservation());
   EXPECT_FALSE(config.allow_zenz_emoji_changes());
   EXPECT_FALSE(config.defer_live_conversion_display_until_zenz_result());
-  EXPECT_EQ(config.zenz_live_correction_delay_msec(), 700);
+  EXPECT_EQ(config.zenz_live_correction_delay_msec(), 200);
   EXPECT_EQ(config.zenz_deferred_presentation_timeout_msec(), 250);
   EXPECT_EQ(config.zenz_live_correction_timeout_msec(), 180);
   EXPECT_EQ(config.zenz_live_correction_min_key_length(), 2);
@@ -152,7 +160,7 @@ void ExpectMozkeyProductDefaults(const Config& config) {
   EXPECT_TRUE(config.use_custom_preedit_target_underline_color());
   EXPECT_EQ(config.preedit_target_underline_color(), 0xc1a5ab);
   EXPECT_TRUE(config.use_custom_zenz_live_correction_underline_color());
-  EXPECT_EQ(config.zenz_live_correction_underline_color(), 0xc4dc6c);
+  EXPECT_EQ(config.zenz_live_correction_underline_color(), 0xe5004f);
 #endif  // _WIN32
   EXPECT_EQ(config.suggestions_size(), 3);
 }

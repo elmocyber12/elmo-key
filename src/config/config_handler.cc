@@ -327,8 +327,17 @@ void ApplyMozkeyProductDefaults(Config* config) {
   if (!config->has_show_candidate_window_on_initial_conversion()) {
     config->set_show_candidate_window_on_initial_conversion(true);
   }
+  // ELMO_key: punctuation direct commit is off by default (the key set below
+  // stays as the preset used when the user turns it on).
   if (!config->has_use_direct_commit()) {
-    config->set_use_direct_commit(true);
+    config->set_use_direct_commit(false);
+  }
+  // ELMO_key: faster live conversion and AI correction start.
+  if (!config->has_live_conversion_delay_msec()) {
+    config->set_live_conversion_delay_msec(100);
+  }
+  if (!config->has_zenz_live_correction_delay_msec()) {
+    config->set_zenz_live_correction_delay_msec(200);
   }
   if (!config->has_direct_commit_key()) {
     config->set_direct_commit_key(kMozkeyDefaultDirectCommitKey);
