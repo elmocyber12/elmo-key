@@ -276,6 +276,22 @@
         <translation>表示中のAI補正をブロック</translation>
     </message>
     <message>
+        <source>ElmoAiRewritePolite</source>
+        <translation>文章を丁寧に書き直す（AI・試験版）</translation>
+    </message>
+    <message>
+        <source>ElmoAiRewriteEnglish</source>
+        <translation>文章を英語にする（AI・試験版）</translation>
+    </message>
+    <message>
+        <source>ElmoAiRewritePlain</source>
+        <translation>「だ・である」調に書き直す（AI・試験版）</translation>
+    </message>
+    <message>
+        <source>ElmoAiRewriteEasy</source>
+        <translation>やさしい日本語に書き直す（AI・試験版）</translation>
+    </message>
+    <message>
         <source>Return to normal conversion must be used alone.</source>
         <translation>通常のELMO_key変換に戻す操作は単独で指定してください。</translation>
     </message>

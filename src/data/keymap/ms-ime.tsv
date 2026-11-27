@@ -5,7 +5,7 @@ Composition	Ctrl a	MoveCursorToBeginning
 Composition	Ctrl Backspace	Backspace
 Composition	Ctrl d	MoveCursorRight
 Composition	Ctrl Down	MoveCursorToEnd
-Composition	Ctrl e	MoveCursorToBeginning
+Composition	Ctrl e	ElmoAiRewriteEnglish
 Composition	Ctrl Enter	Commit
 Composition	Ctrl f	MoveCursorToEnd
 Composition	Ctrl g	Delete
@@ -22,7 +22,7 @@ Composition	Ctrl Right	MoveCursorToEnd
 Composition	Ctrl s	MoveCursorLeft
 Composition	Ctrl Shift Space	InsertFullSpace
 Composition	Ctrl Space	InsertHalfSpace
-Composition	Ctrl t	ConvertToHalfAlphanumeric
+Composition	Ctrl t	ElmoAiRewritePolite
 Composition	Ctrl u	ConvertToHiragana
 Composition	Ctrl Up	MoveCursorToBeginning
 Composition	Ctrl x	MoveCursorToEnd
@@ -61,12 +61,14 @@ Composition	Tab	PredictAndConvert
 Composition	VirtualLeft	MoveCursorLeft
 Composition	VirtualRight	MoveCursorRight
 Composition	VirtualEnter	Commit
+Composition	Ctrl r	ElmoAiRewritePlain
+Composition	Ctrl y	ElmoAiRewriteEasy
 Conversion	Backspace	Cancel
 Conversion	Ctrl a	SegmentFocusFirst
 Conversion	Ctrl Backspace	Cancel
 Conversion	Ctrl d	SegmentFocusRight
 Conversion	Ctrl Down	CommitOnlyFirstSegment
-Conversion	Ctrl e	ConvertPrev
+Conversion	Ctrl e	ElmoAiRewriteEnglish
 Conversion	Ctrl Enter	Commit
 Conversion	Ctrl f	SegmentFocusLast
 Conversion	Ctrl g	Cancel
@@ -83,7 +85,7 @@ Conversion	Ctrl Right	SegmentFocusLast
 Conversion	Ctrl s	SegmentFocusLeft
 Conversion	Ctrl Shift Space	InsertFullSpace
 Conversion	Ctrl Space	InsertHalfSpace
-Conversion	Ctrl t	ConvertToHalfAlphanumeric
+Conversion	Ctrl t	ElmoAiRewritePolite
 Conversion	Ctrl u	ConvertToHiragana
 Conversion	Ctrl Up	ConvertPrev
 Conversion	Ctrl x	ConvertNext
@@ -155,6 +157,8 @@ Precomposition	Shift Muhenkan	ToggleAlphanumericMode
 Precomposition	Shift Space	InsertAlternateSpace
 Precomposition	Space	ReconvertSelectionOrInsertSpace
 Conversion	Ctrl Delete	DeleteSelectedCandidate
+Conversion	Ctrl r	ElmoAiRewritePlain
+Conversion	Ctrl y	ElmoAiRewriteEasy
 Prediction	Ctrl Delete	DeleteSelectedCandidate
 Suggestion	Down	PredictAndConvert
 Suggestion	Shift Enter	CommitFirstSuggestion

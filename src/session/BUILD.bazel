@@ -214,6 +214,7 @@ mozc_cc_library(
         "//evaluation/candidates_diff_checker:__pkg__",
     ],
     deps = [
+        ":elmo_ai_rewriter",
         ":ime_context",
         ":key_event_transformer",
         ":keymap",
@@ -1066,6 +1067,30 @@ mozc_cc_test(
         ":zenz_context_request",
         "//protocol:commands_cc_proto",
         "//protocol:config_cc_proto",
+        "//testing:gunit_main",
+    ],
+)
+
+# ELMO_key AI rewrite (Ctrl+T / Ctrl+E / Ctrl+R / Ctrl+Y, trial feature).
+mozc_cc_library(
+    name = "elmo_ai_rewriter",
+    srcs = ["elmo_ai_rewriter.cc"],
+    hdrs = ["elmo_ai_rewriter.h"],
+    linkopts = select({
+        "@platforms//os:windows": [
+            "Advapi32.lib",
+            "Ws2_32.lib",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+mozc_cc_test(
+    name = "elmo_ai_rewriter_test",
+    size = "small",
+    srcs = ["elmo_ai_rewriter_test.cc"],
+    deps = [
+        ":elmo_ai_rewriter",
         "//testing:gunit_main",
     ],
 )

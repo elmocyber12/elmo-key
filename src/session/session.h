@@ -592,6 +592,13 @@ class Session {
   std::string zenz_live_key_;
   std::string zenz_live_display_key_;
   std::string zenz_live_value_;
+  // ELMO_key AI rewrite state.
+  enum class ElmoRewritePhase { kNone, kPending, kShown };
+  ElmoRewritePhase elmo_rewrite_phase_ = ElmoRewritePhase::kNone;
+  uint64_t elmo_rewrite_id_ = 0;
+  std::string elmo_rewrite_key_;
+  std::string elmo_rewrite_original_;
+  std::string elmo_rewrite_value_;
   std::string zenz_live_mozc_value_;
   std::string zenz_live_context_class_;
   std::string zenz_live_left_context_;
@@ -836,6 +843,19 @@ class Session {
   bool RevertZenzLiveCorrectionToNormalConversion(
       mozc::commands::Command* command, bool record_rejection = true);
   bool BlockVisibleZenzCorrection(mozc::commands::Command* command);
+
+  // ELMO_key AI rewrite (Ctrl+T / Ctrl+E / Ctrl+R / Ctrl+Y, trial).
+  // `mode` is session::ElmoRewriteMode as int.
+  bool ElmoAiRewriteStart(mozc::commands::Command* command, int mode,
+                          bool from_conversion);
+  bool ElmoAiRewritePoll(mozc::commands::Command* command);
+  // Handles keys while a rewrite is pending or shown.  Returns true when the
+  // key was fully handled (`*result` is then the SendKey result).
+  bool ElmoAiRewriteInterceptKey(mozc::commands::Command* command,
+                                 bool* result);
+  void ElmoAiRewriteClear();
+  void ElmoAiRewriteOutputPreedit(mozc::commands::Command* command,
+                                  absl::string_view value, bool pending);
   bool CommitZenzLiveCorrectionResult(mozc::commands::Command* command);
 
   std::string BuildZenzFeedbackContextClass(

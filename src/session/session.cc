@@ -57,6 +57,7 @@
 #include "engine/engine_interface.h"
 #include "protocol/commands.pb.h"
 #include "protocol/config.pb.h"
+#include "session/elmo_ai_rewriter.h"
 #include "session/ime_context.h"
 #include "session/key_event_transformer.h"
 #include "session/keymap.h"
@@ -2100,6 +2101,7 @@ bool Session::SendCommand(commands::Command* command) {
     case commands::SessionCommand::APPLY_LIVE_CONVERSION:
     case commands::SessionCommand::APPLY_ZENZ_LIVE_CORRECTION:
     case commands::SessionCommand::RESUME_COMMAND_SEQUENCE:
+    case commands::SessionCommand::ELMO_AI_REWRITE_POLL:
       break;
     case commands::SessionCommand::CONVERT_REVERSE:
       if (command_sequence_waits_for_reconversion_) break;
@@ -2219,6 +2221,10 @@ bool Session::SendCommand(commands::Command* command) {
 
     case commands::SessionCommand::APPLY_ZENZ_LIVE_CORRECTION:
       result = ApplyZenzLiveCorrection(command);
+      break;
+
+    case commands::SessionCommand::ELMO_AI_REWRITE_POLL:
+      result = ElmoAiRewritePoll(command);
       break;
     case commands::SessionCommand::RESUME_COMMAND_SEQUENCE:
       result = ResumeCommandSequence(command);
@@ -2399,6 +2405,10 @@ bool Session::SendKey(commands::Command* command) {
   HandleIndirectImeOnOff(command);
 
   bool result = false;
+  if (ElmoAiRewriteInterceptKey(command, &result)) {
+    MaybeSetUndoStatus(command);
+    return result;
+  }
   switch (context_->state()) {
     case ImeContext::DIRECT:
       result = SendKeyDirectInputState(command);
@@ -2924,6 +2934,19 @@ bool Session::ExecuteCompositionCommand(
     case keymap::CompositionState::COMPOSITION_MODE_HALF_ALPHANUMERIC:
       return CompositionModeHalfASCII(command);
 
+    case keymap::CompositionState::ELMO_AI_REWRITE_POLITE:
+      return ElmoAiRewriteStart(
+          command, static_cast<int>(ElmoRewriteMode::kPolite), false);
+    case keymap::CompositionState::ELMO_AI_REWRITE_ENGLISH:
+      return ElmoAiRewriteStart(
+          command, static_cast<int>(ElmoRewriteMode::kEnglish), false);
+    case keymap::CompositionState::ELMO_AI_REWRITE_PLAIN:
+      return ElmoAiRewriteStart(
+          command, static_cast<int>(ElmoRewriteMode::kPlain), false);
+    case keymap::CompositionState::ELMO_AI_REWRITE_EASY:
+      return ElmoAiRewriteStart(
+          command, static_cast<int>(ElmoRewriteMode::kEasy), false);
+
     case keymap::CompositionState::NONE:
       return DoNothing(command);
   }
@@ -3085,6 +3108,19 @@ bool Session::ExecuteConversionCommand(
 
     case keymap::ConversionState::DELETE_SELECTED_CANDIDATE:
       return DeleteSelectedCandidate(command);
+
+    case keymap::ConversionState::ELMO_AI_REWRITE_POLITE:
+      return ElmoAiRewriteStart(
+          command, static_cast<int>(ElmoRewriteMode::kPolite), true);
+    case keymap::ConversionState::ELMO_AI_REWRITE_ENGLISH:
+      return ElmoAiRewriteStart(
+          command, static_cast<int>(ElmoRewriteMode::kEnglish), true);
+    case keymap::ConversionState::ELMO_AI_REWRITE_PLAIN:
+      return ElmoAiRewriteStart(
+          command, static_cast<int>(ElmoRewriteMode::kPlain), true);
+    case keymap::ConversionState::ELMO_AI_REWRITE_EASY:
+      return ElmoAiRewriteStart(
+          command, static_cast<int>(ElmoRewriteMode::kEasy), true);
 
     case keymap::ConversionState::NONE:
       return DoNothing(command);
@@ -3285,6 +3321,16 @@ bool Session::SendKeyConversionState(commands::Command* command) {
     return HasVisibleZenzLiveCorrection()
                ? RevertZenzLiveCorrectionToNormalConversion(command)
                : DoNothing(command);
+  }
+
+  // ELMO_key AI rewrite works on the visible text; run it before the generic
+  // live-conversion promotion changes what is shown.
+  if (command_sequence.size() == 1 &&
+      (key_command == keymap::ConversionState::ELMO_AI_REWRITE_POLITE ||
+       key_command == keymap::ConversionState::ELMO_AI_REWRITE_ENGLISH ||
+       key_command == keymap::ConversionState::ELMO_AI_REWRITE_PLAIN ||
+       key_command == keymap::ConversionState::ELMO_AI_REWRITE_EASY)) {
+    return ExecuteConversionCommand(key_command, command);
   }
 
   // A standalone manual Zenz correction is not a candidate-navigation action.
@@ -11513,6 +11559,183 @@ composer::Composer* Session::get_internal_composer_only_for_unittest() {
 }
 
 const ImeContext& Session::context() const { return *context_; }
+
+// ---------------------------------------------------------------------------
+// ELMO_key AI rewrite (trial).
+
+namespace {
+constexpr uint32_t kElmoRewritePollMsec = 150;
+
+bool IsPlainSpecialKey(const commands::KeyEvent& key,
+                       commands::KeyEvent::SpecialKey special) {
+  return key.has_special_key() && key.special_key() == special &&
+         key.modifier_keys_size() == 0;
+}
+}  // namespace
+
+void Session::ElmoAiRewriteClear() {
+  if (elmo_rewrite_phase_ == ElmoRewritePhase::kPending &&
+      elmo_rewrite_id_ != 0) {
+    ElmoAiRewriter::Get().Cancel(elmo_rewrite_id_);
+  }
+  elmo_rewrite_phase_ = ElmoRewritePhase::kNone;
+  elmo_rewrite_id_ = 0;
+  elmo_rewrite_key_.clear();
+  elmo_rewrite_original_.clear();
+  elmo_rewrite_value_.clear();
+}
+
+void Session::ElmoAiRewriteOutputPreedit(commands::Command* command,
+                                         absl::string_view value,
+                                         bool pending) {
+  commands::Output* output = command->mutable_output();
+  output->set_consumed(true);
+  OutputMode(command);
+  output->clear_candidate_window();
+  output->set_live_conversion(true);
+  output->set_live_conversion_pending(false);
+  output->set_zenz_live_correction_pending(pending);
+  output->set_zenz_live_correction_applied(!pending);
+  commands::Preedit* preedit = output->mutable_preedit();
+  preedit->Clear();
+  AddPreeditSegment(elmo_rewrite_key_, value,
+                    pending ? commands::Preedit::Segment::UNDERLINE
+                            : commands::Preedit::Segment::HIGHLIGHT,
+                    preedit);
+  preedit->set_cursor(Util::CharsLen(value));
+}
+
+bool Session::ElmoAiRewriteStart(commands::Command* command, int mode,
+                                 bool from_conversion) {
+  const ElmoRewriteMode rewrite_mode = static_cast<ElmoRewriteMode>(mode);
+  if (!context_->GetConfig().use_elmo_ai_rewrite()) {
+    // Feature off: keep what these keys did before.
+    switch (rewrite_mode) {
+      case ElmoRewriteMode::kPolite:
+        return ConvertToHalfASCII(command);
+      case ElmoRewriteMode::kEnglish:
+        return from_conversion ? ConvertPrev(command)
+                               : MoveCursorToBeginning(command);
+      default:
+        return DoNothing(command);
+    }
+  }
+
+  // The text the user sees now.
+  std::string key = context_->composer().GetQueryForConversion();
+  std::string value;
+  if (HasVisibleZenzLiveCorrection()) {
+    value = zenz_live_value_;
+  } else if (context_->state() == ImeContext::CONVERSION) {
+    commands::Preedit preedit;
+    context_->converter().FillPreedit(context_->composer(), &preedit);
+    for (const commands::Preedit::Segment& segment : preedit.segment()) {
+      value += segment.value();
+    }
+  } else {
+    const std::pair<std::string, std::string> shown =
+        GetPendingLiveConversionDisplayCommitStrings();
+    value = shown.second.empty() ? context_->composer().GetStringForPreedit()
+                                 : shown.second;
+    if (!shown.first.empty()) key = shown.first;
+  }
+  if (key.empty()) key = value;
+  if (value.empty()) {
+    return DoNothing(command);
+  }
+
+  ElmoAiRewriteClear();
+  std::string reason;
+  const uint64_t id = ElmoAiRewriter::Get().Start(rewrite_mode, value, &reason);
+  if (id == 0) {
+    // No model or could not start: leave the text as it is.
+    return OutputCurrentLiveConversionAfterZenzStop(
+        command, reason == "no_model" ? "elmo_rewrite_no_model"
+                                      : "elmo_rewrite_unavailable");
+  }
+  elmo_rewrite_phase_ = ElmoRewritePhase::kPending;
+  elmo_rewrite_id_ = id;
+  elmo_rewrite_key_ = key;
+  elmo_rewrite_original_ = value;
+
+  ElmoAiRewriteOutputPreedit(command, elmo_rewrite_original_,
+                             /*pending=*/true);
+  commands::Output::Callback* callback =
+      command->mutable_output()->mutable_callback();
+  commands::SessionCommand* session_command =
+      callback->mutable_session_command();
+  session_command->set_type(commands::SessionCommand::ELMO_AI_REWRITE_POLL);
+  session_command->set_id(static_cast<int32_t>(id & 0x7fffffff));
+  callback->set_delay_millisec(kElmoRewritePollMsec);
+  return true;
+}
+
+bool Session::ElmoAiRewritePoll(commands::Command* command) {
+  const int32_t expected = static_cast<int32_t>(elmo_rewrite_id_ & 0x7fffffff);
+  if (elmo_rewrite_phase_ != ElmoRewritePhase::kPending ||
+      command->input().command().id() != expected) {
+    // Stale callback: nothing to change.
+    command->mutable_output()->set_consumed(true);
+    return true;
+  }
+  const ElmoRewritePollResult r = ElmoAiRewriter::Get().Poll(elmo_rewrite_id_);
+  if (r.status == ElmoRewriteStatus::kPending) {
+    ElmoAiRewriteOutputPreedit(command, elmo_rewrite_original_,
+                               /*pending=*/true);
+    commands::Output::Callback* callback =
+        command->mutable_output()->mutable_callback();
+    commands::SessionCommand* session_command =
+        callback->mutable_session_command();
+    session_command->set_type(commands::SessionCommand::ELMO_AI_REWRITE_POLL);
+    session_command->set_id(expected);
+    callback->set_delay_millisec(kElmoRewritePollMsec);
+    return true;
+  }
+  elmo_rewrite_id_ = 0;
+  if (r.status == ElmoRewriteStatus::kFailed || r.value.empty()) {
+    ElmoAiRewriteClear();
+    return OutputCurrentLiveConversionAfterZenzStop(command,
+                                                    "elmo_rewrite_failed");
+  }
+  elmo_rewrite_phase_ = ElmoRewritePhase::kShown;
+  elmo_rewrite_value_ = r.value;
+  ElmoAiRewriteOutputPreedit(command, elmo_rewrite_value_, /*pending=*/false);
+  return true;
+}
+
+bool Session::ElmoAiRewriteInterceptKey(commands::Command* command,
+                                        bool* result) {
+  if (elmo_rewrite_phase_ == ElmoRewritePhase::kNone) {
+    return false;
+  }
+  if (!(context_->state() &
+        (ImeContext::COMPOSITION | ImeContext::CONVERSION))) {
+    ElmoAiRewriteClear();
+    return false;
+  }
+  const commands::KeyEvent& key = command->input().key();
+  if (elmo_rewrite_phase_ == ElmoRewritePhase::kShown &&
+      IsPlainSpecialKey(key, commands::KeyEvent::ENTER)) {
+    const std::string commit_key = elmo_rewrite_key_;
+    const std::string commit_value = elmo_rewrite_value_;
+    ElmoAiRewriteClear();
+    ClearLiveConversionState();
+    ClearZenzLiveCorrectionState();
+    CommitStringDirectly(commit_key, commit_value, command);
+    *result = true;
+    return true;
+  }
+  if (IsPlainSpecialKey(key, commands::KeyEvent::ESCAPE)) {
+    // Back to the text before the rewrite.
+    ElmoAiRewriteClear();
+    *result = OutputCurrentLiveConversionAfterZenzStop(command,
+                                                       "elmo_rewrite_reverted");
+    return true;
+  }
+  // Any other key: drop the rewrite and continue with the original text.
+  ElmoAiRewriteClear();
+  return false;
+}
 
 }  // namespace session
 }  // namespace mozc

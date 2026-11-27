@@ -760,6 +760,14 @@ void KeyMapManager::InitCommandData() {
                              CompositionState::TRANSLATE_HALF_ASCII);
   RegisterCompositionCommand("ToggleAlphanumericMode",
                              CompositionState::TOGGLE_ALPHANUMERIC_MODE);
+  RegisterCompositionCommand("ElmoAiRewritePolite",
+                             CompositionState::ELMO_AI_REWRITE_POLITE);
+  RegisterCompositionCommand("ElmoAiRewriteEnglish",
+                             CompositionState::ELMO_AI_REWRITE_ENGLISH);
+  RegisterCompositionCommand("ElmoAiRewritePlain",
+                             CompositionState::ELMO_AI_REWRITE_PLAIN);
+  RegisterCompositionCommand("ElmoAiRewriteEasy",
+                             CompositionState::ELMO_AI_REWRITE_EASY);
   if (kCompositionModeXCommandSupported) {
     RegisterCompositionCommand(kCommandStringCompositionModeHiragana,
                                CompositionState::COMPOSITION_MODE_HIRAGANA);
@@ -798,6 +806,14 @@ void KeyMapManager::InitCommandData() {
                             ConversionState::REVERT_ZENZ_TO_MOZC);
   RegisterConversionCommand("BlockVisibleZenzCorrection",
                             ConversionState::BLOCK_VISIBLE_ZENZ_CORRECTION);
+  RegisterConversionCommand("ElmoAiRewritePolite",
+                            ConversionState::ELMO_AI_REWRITE_POLITE);
+  RegisterConversionCommand("ElmoAiRewriteEnglish",
+                            ConversionState::ELMO_AI_REWRITE_ENGLISH);
+  RegisterConversionCommand("ElmoAiRewritePlain",
+                            ConversionState::ELMO_AI_REWRITE_PLAIN);
+  RegisterConversionCommand("ElmoAiRewriteEasy",
+                            ConversionState::ELMO_AI_REWRITE_EASY);
   RegisterConversionCommand("Backspace", ConversionState::BACKSPACE);
   RegisterConversionCommand("IMEOff", ConversionState::IME_OFF);
   RegisterConversionCommand("IMEOn", ConversionState::IME_ON);

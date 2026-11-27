@@ -347,6 +347,41 @@ ConfigDialog::ConfigDialog()
     QObject::connect(furigana,
                      QOverload<int>::of(&QComboBox::currentIndexChanged), this,
                      [this](int) { EnableApplyButton(); });
+
+    // ELMO_key: AI rewrite (trial).
+    auto* ai_group = new QGroupBox(
+        QString::fromUtf8("AI で書き直す（試験版・ELMO_key）"),
+        inputSupportScrollAreaWidgetContents);
+    ai_group->setObjectName(QStringLiteral("elmoAiRewriteGroupBox"));
+    auto* ai_layout = new QVBoxLayout(ai_group);
+    auto* ai_check = new QCheckBox(
+        QString::fromUtf8("入力中の文章を AI で書き直す"), ai_group);
+    ai_check->setObjectName(QStringLiteral("elmoAiRewriteCheckBox"));
+    ai_layout->addWidget(ai_check);
+    const std::wstring local_app_data = [] {
+      wchar_t buf[MAX_PATH];
+      const DWORD n = ::GetEnvironmentVariableW(L"LOCALAPPDATA", buf, MAX_PATH);
+      return (n > 0 && n < MAX_PATH) ? std::wstring(buf, n) : std::wstring();
+    }();
+    auto* ai_note = new QLabel(
+        QString::fromUtf8(
+            "文字を打っている途中（確定する前）に、Ctrl+T で丁寧な文章、"
+            "Ctrl+E で英語、Ctrl+R で「だ・である」調、Ctrl+Y でやさしい日本語"
+            "に書き直します。Enter で確定、Esc で元の文に戻ります。"
+            "書き直しには別にダウンロードする AI のモデル（約 2GB）が必要です。"
+            "モデルのファイル（.gguf）を次のフォルダーに置いてください：\n") +
+            QString::fromStdWString(local_app_data) +
+            QString::fromUtf8("\\ELMO_key\\models\n"
+                              "書き直しは PC の中だけで行い、文章を外に送りません。"
+                              "出た文は必ず確認してから使ってください。"),
+        ai_group);
+    ai_note->setWordWrap(true);
+    ai_note->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    ai_layout->addWidget(ai_note);
+    content_layout->insertWidget(std::max(0, content_layout->count() - 1),
+                                 ai_group);
+    QObject::connect(ai_check, &QCheckBox::stateChanged, this,
+                     [this](int) { EnableApplyButton(); });
   }
 
   // Both scrollable tabs must preserve the native tab-page background and
@@ -6213,6 +6248,9 @@ void ConfigDialog::ConvertFromProto(const config::Config &config) {
         static_cast<int>(std::min<uint32_t>(config.elmo_furigana_style(), 2)));
     furigana->setCurrentIndex(std::max(0, index));
   }
+  if (auto* ai = findChild<QCheckBox*>(QStringLiteral("elmoAiRewriteCheckBox"))) {
+    ai->setChecked(config.use_elmo_ai_rewrite());
+  }
 
   SET_CHECKBOX(zenzLiveCorrectionCheckBox, use_zenz_live_correction);
   SET_CHECKBOX(zenzStrictReadingPreservationCheckBox,
@@ -6612,6 +6650,10 @@ void ConfigDialog::ConvertToProto(config::Config *config) const {
           findChild<QComboBox*>(QStringLiteral("elmoFuriganaComboBox"))) {
     config->set_elmo_furigana_style(
         static_cast<uint32_t>(std::max(0, furigana->currentData().toInt())));
+  }
+  if (const auto* ai =
+          findChild<QCheckBox*>(QStringLiteral("elmoAiRewriteCheckBox"))) {
+    config->set_use_elmo_ai_rewrite(ai->isChecked());
   }
 
   GET_CHECKBOX(zenzLiveCorrectionCheckBox, use_zenz_live_correction);

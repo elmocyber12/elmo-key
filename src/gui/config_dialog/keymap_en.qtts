@@ -276,6 +276,22 @@
         <translation>Block visible AI correction</translation>
     </message>
     <message>
+        <source>ElmoAiRewritePolite</source>
+        <translation>Rewrite politely (AI, trial)</translation>
+    </message>
+    <message>
+        <source>ElmoAiRewriteEnglish</source>
+        <translation>Translate into English (AI, trial)</translation>
+    </message>
+    <message>
+        <source>ElmoAiRewritePlain</source>
+        <translation>Rewrite in plain style (AI, trial)</translation>
+    </message>
+    <message>
+        <source>ElmoAiRewriteEasy</source>
+        <translation>Rewrite in easy Japanese (AI, trial)</translation>
+    </message>
+    <message>
         <source>Return to normal conversion must be used alone.</source>
         <translation>Return to normal conversion must be used alone.</translation>
     </message>

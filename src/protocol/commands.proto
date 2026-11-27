@@ -471,6 +471,10 @@ message SessionCommand {
     // Continue an interrupted user keymap macro after a client callback or
     // a bounded timer. Requires command_sequence_generation to reject stales.
     RESUME_COMMAND_SEQUENCE = 31;
+
+    // ELMO_key: polls a pending AI rewrite (Ctrl+T / Ctrl+E / Ctrl+R /
+    // Ctrl+Y).  `id` carries the request id.  Sent from Output::Callback.
+    ELMO_AI_REWRITE_POLL = 40;
   }
   required CommandType type = 1;
 

@@ -150,6 +150,12 @@ struct CompositionState {
     COMPOSITION_MODE_HALF_KATAKANA,
     COMPOSITION_MODE_FULL_ALPHANUMERIC,
     COMPOSITION_MODE_HALF_ALPHANUMERIC,
+    // ELMO_key AI rewrite (trial).  When the feature is off these fall back
+    // to the commands they replaced in the default keymap.
+    ELMO_AI_REWRITE_POLITE,   // Ctrl+T (else ConvertToHalfAlphanumeric)
+    ELMO_AI_REWRITE_ENGLISH,  // Ctrl+E (else MoveCursorToBeginning)
+    ELMO_AI_REWRITE_PLAIN,    // Ctrl+R (else nothing)
+    ELMO_AI_REWRITE_EASY,     // Ctrl+Y (else nothing)
   };
 };
 
@@ -208,6 +214,11 @@ struct ConversionState {
     DELETE_SELECTED_CANDIDATE,
     REPORT_BUG,
     BLOCK_VISIBLE_ZENZ_CORRECTION,  // Manual full-sequence hard block.
+    // ELMO_key AI rewrite (trial).  See CompositionState.
+    ELMO_AI_REWRITE_POLITE,   // Ctrl+T (else ConvertToHalfAlphanumeric)
+    ELMO_AI_REWRITE_ENGLISH,  // Ctrl+E (else ConvertPrev)
+    ELMO_AI_REWRITE_PLAIN,    // Ctrl+R
+    ELMO_AI_REWRITE_EASY,     // Ctrl+Y
   };
 };
 

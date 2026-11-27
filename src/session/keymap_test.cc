@@ -1406,12 +1406,13 @@ TEST_F(KeyMapTest, Reconvert) {
   {  // MSIME
     KeyMapManager manager(GetDefaultConfig(config::Config::MSIME));
 
+    // ELMO_key: Henkan turns the IME on (hiragana) instead of reconverting.
     KeyParser::ParseKey("Henkan", &key_event);
     EXPECT_TRUE(manager.GetCommandDirect(key_event, &direct_command));
-    EXPECT_EQ(direct_command, DirectInputState::RECONVERT);
+    EXPECT_EQ(direct_command, DirectInputState::IME_ON);
     EXPECT_TRUE(
         manager.GetCommandPrecomposition(key_event, &precomposition_command));
-    EXPECT_EQ(precomposition_command, PrecompositionState::RECONVERT);
+    EXPECT_EQ(precomposition_command, PrecompositionState::IME_ON);
   }
   {  // KOTOERI
     KeyMapManager manager(GetDefaultConfig(config::Config::KOTOERI));
