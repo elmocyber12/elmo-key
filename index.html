@@ -118,6 +118,20 @@
     .btn-secondary:hover { box-shadow: inset 0 0 0 1px var(--secondary-button-border); }
   }
   .btn-large { min-height: 64px; padding: 16px 32px; }
+  /* 試験版の案内（通常版のボタンより控えめに） */
+  .trial-card { display: grid; gap: 12px; padding: 16px 20px; border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--surface); }
+  .trial-card p { margin: 0; }
+  .trial-head { display: flex; align-items: center; gap: 8px; }
+  .trial-badge { background: var(--accent); color: #000000; border-radius: 999px; padding: 2px 12px; font-weight: 700; }
+  .trial-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .trial-features { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .trial-features li { display: grid; grid-template-columns: 210px 1fr; gap: 4px 16px; align-items: baseline; padding-top: 10px; border-top: 1px solid var(--line); }
+  .trial-features li:first-child { border-top: 0; padding-top: 0; }
+  .trial-key { line-height: 2; }
+  .trial-what { display: grid; gap: 2px; min-width: 0; }
+  .trial-example { overflow-wrap: anywhere; opacity: .85; }
+  @media (max-width: 640px) { .trial-features li { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .trial-actions .btn { width: 100%; } }
   .btn[aria-disabled="true"] { background: var(--disabled-fill); border-color: var(--disabled-border); color: var(--disabled-text); pointer-events: none; box-shadow: none; }
 
   /* 通知 */
@@ -325,9 +339,35 @@
             <a class="btn btn-secondary el-label" href="#install">インストールの手順を見る</a>
           </div>
           <p class="el-caption hero-meta" aria-live="polite"><span>Windows 10 / 11（64 ビット）</span><span id="release-version">最新版</span><span id="release-size">約 110 MB</span><span id="release-date" hidden></span></p>
-          <div class="notice notice--info el-caption trial-note" role="note">
-            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-info"/></svg>
-            <p><strong>試験版（v1.2.11）：</strong>入力中の文章を AI で英語・「だ・である」調・やさしい日本語に書き直す機能を試せます。<a href="https://github.com/elmocyber12/elmo-key/releases/download/v1.2.11/ELMO_key_x64.msi">試験版をダウンロード</a>／<a href="#faq-ai-rewrite" data-open-details>使い方と準備</a>（別に AI のモデル約 2GB が必要です）</p>
+          <div class="trial-card trial-note" role="region" aria-label="試験版">
+            <p class="trial-head"><span class="trial-badge el-label">試験版</span><span class="el-label" id="trial-version">v1.2.11</span></p>
+            <p class="el-caption">通常版の機能に加えて、次の機能を試せます。</p>
+            <ul class="trial-features">
+              <li>
+                <span class="trial-key"><kbd>Ctrl</kbd> + <kbd>E</kbd></span>
+                <span class="trial-what"><strong>英語にする</strong><span class="trial-example el-caption">会議の時間が3時に変わりました → The meeting time has been changed to 3 PM.</span></span>
+              </li>
+              <li>
+                <span class="trial-key"><kbd>Ctrl</kbd> + <kbd>R</kbd></span>
+                <span class="trial-what"><strong>「だ・である」調にする</strong><span class="trial-example el-caption">次回の会議は来月十日に開催します。 → 次回の会議は来月十日に開催する。</span></span>
+              </li>
+              <li>
+                <span class="trial-key"><kbd>Ctrl</kbd> + <kbd>Y</kbd></span>
+                <span class="trial-what"><strong>やさしい日本語にする</strong><span class="trial-example el-caption">運動会は雨天の場合翌日に順延します → 運動会は 雨なら、次の日 にします。</span></span>
+              </li>
+              <li>
+                <span class="trial-key"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F1</kbd>〜<kbd>F6</kbd></span>
+                <span class="trial-what"><strong>学年別漢字モード（小1〜小6）に切り替え</strong><span class="trial-example el-caption"><kbd>F12</kbd> で解除。入力中の札に「ELMO_key 小2」のように出ます</span></span>
+              </li>
+            </ul>
+            <p class="el-caption">AI の書き直しは、文字を打っている途中（Enter を押す前）にキーを押します。Enter で確定、Esc で元に戻ります。別に AI のモデル（約 2GB）が必要です。</p>
+            <div class="trial-actions">
+              <a class="btn btn-secondary el-label" id="trial-download" href="https://github.com/elmocyber12/elmo-key/releases/download/v1.2.11/ELMO_key_x64.msi">
+                <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-download"/></svg>
+                <span>試験版をダウンロード</span>
+              </a>
+              <a class="btn btn-secondary el-label" href="#faq-ai-rewrite" data-open-details>使い方と準備を見る</a>
+            </div>
           </div>
           <div class="notice notice--warning el-caption" role="note">
             <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-warn"/></svg>
