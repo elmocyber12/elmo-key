@@ -490,7 +490,14 @@ void DiagLog(const std::string& line) {
 std::wstring FindModelPath() {
   std::vector<std::wstring> bases;
   const std::wstring profile = UserProfileFromToken();
-  if (!profile.empty()) bases.push_back(profile + L"\\AppData\\Local");
+  // LocalLow first: when mozc_server is started by a packaged app (e.g. the
+  // Windows 11 Notepad), AppData\Local is virtualized and the user's real
+  // folder is not visible (seen as ERROR_PATH_NOT_FOUND), while LocalLow,
+  // where Mozc keeps its own data, is.
+  if (!profile.empty()) {
+    bases.push_back(profile + L"\\AppData\\LocalLow");
+    bases.push_back(profile + L"\\AppData\\Local");
+  }
   bases.push_back(GetEnvW(L"LOCALAPPDATA"));
   bases.push_back(GetEnvW(L"ProgramData"));
   bases.push_back(L"C:\\ProgramData");

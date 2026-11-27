@@ -2259,6 +2259,11 @@ bool Session::SendCommand(commands::Command* command) {
       result = DoNothing(command);
       break;
   }
+  if (context_->state() &
+      (ImeContext::PRECOMPOSITION | ImeContext::DIRECT)) {
+    // The composition ended (commit, cancel, IME off): drop any AI rewrite.
+    ElmoAiRewriteClear();
+  }
   if (context_->state() != ImeContext::CONVERSION) {
     live_conversion_active_ = false;
     live_conversion_from_composition_ = false;
@@ -2452,6 +2457,11 @@ bool Session::SendKey(commands::Command* command) {
       break;
   }
 
+  if (context_->state() &
+      (ImeContext::PRECOMPOSITION | ImeContext::DIRECT)) {
+    // The composition ended (commit, cancel, IME off): drop any AI rewrite.
+    ElmoAiRewriteClear();
+  }
   if (context_->state() != ImeContext::CONVERSION) {
     live_conversion_active_ = false;
     live_conversion_from_composition_ = false;
@@ -3744,6 +3754,8 @@ bool Session::Revert(commands::Command* command) {
 }
 
 bool Session::ResetContext(commands::Command* command) {
+  // ELMO_key: a pending/shown AI rewrite belongs to the old context.
+  ElmoAiRewriteClear();
   ConfirmPendingDirectCommitLearning(
       "reset_context_after_direct_commit_learning");
   ConfirmPendingZenzFeedback();
@@ -11715,6 +11727,12 @@ bool Session::ElmoAiRewriteStart(commands::Command* command, int mode,
 
 bool Session::ElmoAiRewritePoll(commands::Command* command) {
   const int32_t expected = static_cast<int32_t>(elmo_rewrite_id_ & 0x7fffffff);
+  if (elmo_rewrite_phase_ != ElmoRewritePhase::kNone &&
+      !(context_->state() &
+        (ImeContext::COMPOSITION | ImeContext::CONVERSION))) {
+    // The composition this rewrite belonged to is gone.
+    ElmoAiRewriteClear();
+  }
   if (elmo_rewrite_phase_ != ElmoRewritePhase::kPending ||
       command->input().command().id() != expected) {
     // Stale callback: re-output what is shown now.
