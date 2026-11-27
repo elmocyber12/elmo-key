@@ -70,6 +70,7 @@
 #include <QTableWidgetItem>
 #include <QTabWidget>
 #include <QPlainTextEdit>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QWheelEvent>
 #include <algorithm>
@@ -100,6 +101,7 @@
 #include "client/client.h"
 #include "config/config_handler.h"
 #include "gui/base/util.h"
+#include "gui/config_dialog/elmo_model_downloader.h"
 #include "gui/config_dialog/keymap_editor.h"
 #include "gui/config_dialog/roman_table_editor.h"
 #include "protocol/config.pb.h"
@@ -373,20 +375,124 @@ ConfigDialog::ConfigDialog()
             "文字を打っている途中（確定する前）に、"
             "Ctrl+E で英語、Ctrl+R で「だ・である」調、Ctrl+Y でやさしい日本語"
             "に書き直します。Enter で確定、Esc で元の文に戻ります。"
-            "書き直しには別にダウンロードする AI のモデル（約 2GB）が必要です。"
-            "モデルのファイル（.gguf）を次のフォルダーに置いてください：\n") +
+            "書き直しには AI のモデル（約 2GB）が必要です。チェックを入れると、"
+            "モデルがなければダウンロードして次のフォルダーに置きます：\n") +
             QString::fromStdWString(local_app_data) +
             QString::fromUtf8("\\ELMO_key\\models\n"
-                              "書き直しは PC の中だけで行い、文章を外に送りません。"
+                              "書き直しは PC の中だけで行い、文章を外に送りません"
+                              "（インターネットに接続するのは、モデルをダウンロード"
+                              "するときの 1 回だけです）。"
                               "出た文は必ず確認してから使ってください。"),
         ai_group);
     ai_note->setWordWrap(true);
     ai_note->setTextInteractionFlags(Qt::TextSelectableByMouse);
     ai_layout->addWidget(ai_note);
+
+    // ELMO_key: model download (Windows BITS) with progress.
+    auto* model_row = new QHBoxLayout();
+    auto* model_status = new QLabel(ai_group);
+    model_status->setWordWrap(true);
+    auto* model_download = new QPushButton(
+        QString::fromUtf8("モデルをダウンロード"), ai_group);
+    auto* model_cancel =
+        new QPushButton(QString::fromUtf8("中止"), ai_group);
+    model_row->addWidget(model_status, 1);
+    model_row->addWidget(model_download);
+    model_row->addWidget(model_cancel);
+    ai_layout->addLayout(model_row);
+    auto* downloader = new ElmoModelDownloader();  // Lives with the window.
+    auto* model_timer = new QTimer(ai_group);
+    model_timer->setInterval(500);
+    auto update_model_ui = [=]() {
+      using S = ElmoModelDownloader::State;
+      const S state = downloader->Poll();
+      model_download->setVisible(state == S::kNotStarted ||
+                                 state == S::kError);
+      model_download->setText(QString::fromUtf8(
+          state == S::kError ? "もう一度ダウンロード" : "モデルをダウンロード"));
+      model_cancel->setVisible(state == S::kRunning);
+      switch (state) {
+        case S::kReady:
+          model_status->setText(QString::fromUtf8(
+              "AI のモデル：準備ができています。"));
+          model_timer->stop();
+          break;
+        case S::kRunning: {
+          const double done = downloader->bytes_done() / 1e9;
+          const double total = downloader->bytes_total() / 1e9;
+          const int percent =
+              downloader->bytes_total() > 0
+                  ? static_cast<int>(100.0 * downloader->bytes_done() /
+                                     downloader->bytes_total())
+                  : 0;
+          model_status->setText(
+              QString::fromUtf8("AI のモデルをダウンロード中… %1%（%2 / %3 GB）"
+                                "。この画面を閉じても続きます。")
+                  .arg(percent)
+                  .arg(done, 0, 'f', 2)
+                  .arg(total, 0, 'f', 2));
+          break;
+        }
+        case S::kVerifying:
+          model_status->setText(QString::fromUtf8(
+              "ダウンロードしたモデルが本物か確かめています…"));
+          break;
+        case S::kError:
+          model_status->setText(QString::fromStdWString(downloader->error()));
+          model_timer->stop();
+          break;
+        case S::kNotStarted:
+          model_status->setText(QString::fromUtf8(
+              "AI のモデル：まだ入っていません。"));
+          model_timer->stop();
+          break;
+      }
+    };
+    QObject::connect(model_timer, &QTimer::timeout, ai_group, update_model_ui);
+    auto start_download = [=]() {
+      downloader->Start();
+      update_model_ui();
+      if (downloader->Poll() != ElmoModelDownloader::State::kReady) {
+        model_timer->start();
+      }
+    };
+    QObject::connect(model_download, &QPushButton::clicked, ai_group,
+                     start_download);
+    QObject::connect(model_cancel, &QPushButton::clicked, ai_group, [=]() {
+      downloader->Cancel();
+      update_model_ui();
+    });
+    update_model_ui();
+    if (downloader->Poll() == ElmoModelDownloader::State::kRunning ||
+        downloader->Poll() == ElmoModelDownloader::State::kVerifying) {
+      model_timer->start();  // A download started in an earlier window.
+    }
+
     content_layout->insertWidget(std::max(0, content_layout->count() - 1),
                                  ai_group);
     QObject::connect(ai_check, &QCheckBox::stateChanged, this,
                      [this](int) { EnableApplyButton(); });
+    // Turning the feature on: offer to download the model when it is missing.
+    QObject::connect(ai_check, &QCheckBox::clicked, ai_group,
+                     [=](bool checked) {
+      if (!checked || ElmoModelDownloader::ModelInstalled()) return;
+      const auto state = downloader->Poll();
+      if (state == ElmoModelDownloader::State::kRunning ||
+          state == ElmoModelDownloader::State::kVerifying) {
+        return;
+      }
+      const auto answer = QMessageBox::question(
+          ai_group, QString::fromUtf8("AI のモデル"),
+          QString::fromUtf8(
+              "AI で書き直すには、AI のモデル（約 2.1GB）が必要です。\n"
+              "今ダウンロードしますか？\n\n"
+              "・インターネットに接続するのは、このダウンロードの 1 回だけです。\n"
+              "・打った文章が外に送られることはありません。\n"
+              "・ダウンロードは Windows の仕組み（BITS）で行い、この画面を"
+              "閉じても続きます。"),
+          QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+      if (answer == QMessageBox::Yes) start_download();
+    });
   }
 
   // Both scrollable tabs must preserve the native tab-page background and
