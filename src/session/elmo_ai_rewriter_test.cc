@@ -12,12 +12,40 @@ namespace mozc {
 namespace session {
 namespace {
 
+// Seen on a real PC: the model appends notes after the translation, or
+// answers about the translation instead of translating.
+TEST(ElmoAiRewriterEnglishTest, NotesAreCutAndMetaAnswersRejected) {
+  std::string note =
+      "Thank you for your cooperation. (Note: The original sentence does "
+      "not translate well into English.)</s>";
+  EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(ElmoRewriteMode::kEnglish,
+                                          "よろしくお願いします", &note));
+  EXPECT_EQ(note, "Thank you for your cooperation.");
+
+  std::string paragraph = "I will send the materials.\n\nThis is polite.";
+  EXPECT_TRUE(ElmoAiRewriter::CleanAnswer(ElmoRewriteMode::kEnglish,
+                                          "資料を送ります", &paragraph));
+  EXPECT_EQ(paragraph, "I will send the materials.");
+
+  std::string meta = "Please find attached the translated version. (Note: x)";
+  EXPECT_FALSE(ElmoAiRewriter::CleanAnswer(ElmoRewriteMode::kEnglish,
+                                           "よろしくお願いします", &meta));
+
+  const std::string json =
+      ElmoAiRewriter::BuildChatRequestJson(ElmoRewriteMode::kEnglish, "x");
+  EXPECT_NE(json.find("\"temperature\":0,"), std::string::npos);
+  EXPECT_NE(json.find("Thank you for your cooperation."), std::string::npos);
+}
+
+}  // namespace
+namespace {
+
 TEST(ElmoAiRewriterTest, BuildChatRequestJsonEscapesText) {
   const std::string json = ElmoAiRewriter::BuildChatRequestJson(
       ElmoRewriteMode::kPolite, "資料\"直して\"\n");
   EXPECT_NE(json.find("\"messages\":["), std::string::npos);
   EXPECT_NE(json.find("資料\\\"直して\\\"\\n"), std::string::npos);
-  EXPECT_NE(json.find("\"temperature\":0.2"), std::string::npos);
+  EXPECT_NE(json.find("\"temperature\":0,"), std::string::npos);
   // Few-shot examples are included.
   EXPECT_NE(json.find("\"role\":\"assistant\""), std::string::npos);
 }

@@ -47,7 +47,7 @@ struct Shot {
 struct ModeSpec {
   const char* system;
   const char* instruction;
-  Shot shots[2];
+  Shot shots[3];  // An entry with input == nullptr is unused.
 };
 
 constexpr ModeSpec kPoliteSpec = {
@@ -66,12 +66,13 @@ constexpr ModeSpec kPoliteSpec = {
 constexpr ModeSpec kEnglishSpec = {
     "You are a professional Japanese-to-English translator for business "
     "email. Translate the user's Japanese text into natural, polite business "
-    "English. Do not reply to the text, do not add information, and output "
-    "only the English translation.",
+    "English. Do not reply to the text, do not add information, do not add "
+    "notes or explanations, and output only the English translation.",
     "次の日本語を英語に翻訳してください。返事はせず、英訳だけを出力してください。",
     {{"会議の開始時刻が15時に変更となりました。",
       "The meeting start time has been changed to 3:00 p.m."},
-     {"それ、あとで送っといて", "Could you send that to me later?"}},
+     {"それ、あとで送っといて", "Could you send that to me later?"},
+     {"よろしくお願いします", "Thank you for your cooperation."}},
 };
 
 constexpr ModeSpec kPlainSpec = {
@@ -291,6 +292,7 @@ std::string ElmoAiRewriter::BuildChatRequestJson(ElmoRewriteMode mode,
   json += "{\"role\":\"system\",\"content\":\"" + JsonEscape(spec.system) +
           "\"}";
   for (const Shot& shot : spec.shots) {
+    if (shot.input == nullptr) continue;
     json += ",{\"role\":\"user\",\"content\":\"" + JsonEscape(wrap(shot.input)) +
             "\"}";
     json += ",{\"role\":\"assistant\",\"content\":\"" +
@@ -301,7 +303,7 @@ std::string ElmoAiRewriter::BuildChatRequestJson(ElmoRewriteMode mode,
   // tokens are shorter but more numerous.
   const size_t max_tokens =
       std::min<size_t>(1024, 64 + text.size() * (mode == ElmoRewriteMode::kEnglish ? 2 : 1));
-  json += "],\"temperature\":0.2,\"max_tokens\":" + std::to_string(max_tokens) +
+  json += "],\"temperature\":0,\"max_tokens\":" + std::to_string(max_tokens) +
           ",\"stream\":false}";
   return json;
 }
@@ -352,6 +354,13 @@ bool ElmoAiRewriter::CleanAnswer(ElmoRewriteMode mode,
   if (!Contains(original, "「") && !Contains(s, "」")) {
     while (StartsWith(s, "「")) s = Trim(std::string_view(s).substr(3));
   }
+  // Drop notes or explanations the model may append after the answer
+  // (e.g. "... (Note: ...)" or a paragraph after a blank line).
+  for (const std::string_view note :
+       {"\n\n", "(Note", "(note", "Note:", "（注"}) {
+    const size_t at = s.find(note);
+    if (at != std::string::npos && at > 0) s = Trim(std::string_view(s).substr(0, at));
+  }
   if (s.empty()) return false;
   if (s.size() > original.size() * 6 + 200) return false;
 
@@ -360,6 +369,13 @@ bool ElmoAiRewriter::CleanAnswer(ElmoRewriteMode mode,
       return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
     });
     if (!has_latin) return false;
+    // An answer about the translation instead of a translation
+    // ("Please find attached the translated version.") is not usable.
+    std::string lower = s;
+    std::transform(lower.begin(), lower.end(), lower.begin(), [](char c) {
+      return static_cast<char>(c >= 'A' && c <= 'Z' ? c + 32 : c);
+    });
+    if (Contains(lower, "translat")) return false;
   } else {
     // Reject an answer to the text ("かしこまりました…") unless the
     // original text itself is an acknowledgement or thanks.
