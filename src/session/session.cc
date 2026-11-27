@@ -11841,7 +11841,11 @@ bool Session::ElmoAiRewriteInterceptKey(commands::Command* command,
   const commands::KeyEvent& key = command->input().key();
   // While a rewrite is pending, ignore further Ctrl+key presses (e.g. the
   // auto-repeat of a held Ctrl+T); restarting would pile up requests.
-  if (elmo_rewrite_phase_ == ElmoRewritePhase::kPending) {
+  if (elmo_rewrite_phase_ == ElmoRewritePhase::kPending && key.has_key_code() &&
+      (key.key_code() == 'e' || key.key_code() == 'r' ||
+       key.key_code() == 'y' || key.key_code() == 't')) {
+    // Only the rewrite keys themselves (Ctrl+E/R/Y, and Ctrl+T for a custom
+    // keymap) are ignored; other Ctrl keys such as Ctrl+Z keep working.
     for (const auto m : key.modifier_keys()) {
       if (m == commands::KeyEvent::CTRL || m == commands::KeyEvent::LEFT_CTRL ||
           m == commands::KeyEvent::RIGHT_CTRL) {
@@ -11890,9 +11894,28 @@ bool Session::ElmoSetGrade(commands::Command* command, int grade) {
   // and apply it to this session right away.
   config::Config stored = config::ConfigHandler::GetCopiedConfig();
   stored.set_elmo_kanji_grade(static_cast<uint32_t>(grade));
+  const bool use_live_conversion = stored.use_live_conversion();
   config::ConfigHandler::SetConfig(stored);
   SetConfig(std::make_shared<const config::Config>(std::move(stored)));
   command->mutable_output()->set_consumed(true);
+
+  // Candidates and AI results already shown were made for the old grade;
+  // never let them be committed.  Go back to the reading and, with live
+  // conversion, convert it again under the new grade.
+  ElmoAiRewriteClear();
+  if (context_->state() == ImeContext::CONVERSION) {
+    commands::Command scratch;
+    *scratch.mutable_input() = command->input();
+    ConvertCancel(&scratch);
+  }
+  if (context_->state() & (ImeContext::COMPOSITION | ImeContext::CONVERSION)) {
+    ClearZenzLiveCorrectionState();
+    ClearLiveConversionState();
+    if (context_->state() == ImeContext::COMPOSITION && use_live_conversion &&
+        MaybeStartLiveConversion(command)) {
+      return true;
+    }
+  }
   OutputFromState(command);
   return true;
 }

@@ -110,6 +110,8 @@ int StatusFontHeightPx(
 // ELMO_key: grade-level kanji mode of the latest output (0 = off).  The
 // renderer draws on a single UI thread, so a file-level value is enough.
 uint32_t g_elmo_kanji_grade = 0;
+// The grade drawn on the badge last time (repaint when it changes).
+uint32_t g_elmo_drawn_grade = 0xFFFFFFFFu;
 
 std::wstring StatusTextBase(ConversionDisplayStatus state,
     config::Config::ConversionStatusIndicatorLabel label);
@@ -383,7 +385,8 @@ void ConversionStatusWindow::OnUpdate(
     return;
   }
   const bool repaint = status_ != state ||
-      style_.SerializeAsString() != next_style.SerializeAsString();
+      style_.SerializeAsString() != next_style.SerializeAsString() ||
+      g_elmo_kanji_grade != g_elmo_drawn_grade;
   const bool was_visible = IsWindowVisible();
   status_ = state;
   style_.CopyFrom(next_style);
@@ -406,6 +409,7 @@ void ConversionStatusWindow::OnUpdate(
       Hide();
       return;
     }
+    g_elmo_drawn_grade = g_elmo_kanji_grade;
   }
   if (!was_visible) {
     ShowWindow(SW_SHOWNOACTIVATE);

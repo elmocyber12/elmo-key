@@ -675,13 +675,19 @@ class Engine {
   }
 
   uint64_t Start(ElmoRewriteMode mode, std::string text, std::string* reason) {
-    if (active_.load() >= 2) {
-      DiagLog("start: busy");
-      *reason = "busy";
-      return 0;
-    }
+    // Reserve a slot atomically: at most 2 rewrites run at once even when
+    // several sessions start one at the same moment.
+    int current = active_.load();
+    do {
+      if (current >= 2) {
+        DiagLog("start: busy");
+        *reason = "busy";
+        return 0;
+      }
+    } while (!active_.compare_exchange_weak(current, current + 1));
     const std::wstring model = FindModelPath();
     if (model.empty()) {
+      --active_;
       DiagLog("start: no model found");
       *reason = "no_model";
       return 0;
@@ -693,7 +699,6 @@ class Engine {
       std::lock_guard<std::mutex> lock(requests_mutex_);
       requests_[id] = RequestState();
     }
-    ++active_;
     std::thread([this, id, mode, text = std::move(text), model] {
       RequestState result = Run(mode, text, model);
       --active_;

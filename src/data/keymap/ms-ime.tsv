@@ -181,8 +181,22 @@ Conversion	Ctrl Shift F5	ElmoSetGrade5
 Conversion	Ctrl Shift F6	ElmoSetGrade6
 Conversion	Ctrl Shift F12	ElmoSetGrade0
 Prediction	Ctrl Delete	DeleteSelectedCandidate
+Prediction	Ctrl Shift F1	ElmoSetGrade1
+Prediction	Ctrl Shift F2	ElmoSetGrade2
+Prediction	Ctrl Shift F3	ElmoSetGrade3
+Prediction	Ctrl Shift F4	ElmoSetGrade4
+Prediction	Ctrl Shift F5	ElmoSetGrade5
+Prediction	Ctrl Shift F6	ElmoSetGrade6
+Prediction	Ctrl Shift F12	ElmoSetGrade0
 Suggestion	Down	PredictAndConvert
 Suggestion	Shift Enter	CommitFirstSuggestion
+Suggestion	Ctrl Shift F1	ElmoSetGrade1
+Suggestion	Ctrl Shift F2	ElmoSetGrade2
+Suggestion	Ctrl Shift F3	ElmoSetGrade3
+Suggestion	Ctrl Shift F4	ElmoSetGrade4
+Suggestion	Ctrl Shift F5	ElmoSetGrade5
+Suggestion	Ctrl Shift F6	ElmoSetGrade6
+Suggestion	Ctrl Shift F12	ElmoSetGrade0
 ZenzConversion	Space	RevertZenzToMozc
 ZenzConversion	Ctrl Delete	BlockVisibleZenzCorrection
 LiveConversion	Backspace	Backspace

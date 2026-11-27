@@ -433,6 +433,11 @@ bool SessionHandler::SendKey(commands::Command* command) {
   }
   (*session)->SendKey(command);
   MaybeUpdateConfig(command);
+  // ELMO_key: a key command (e.g. the grade-level kanji shortcut) may have
+  // saved a new config; hand it to every session (other applications) now.
+  if (config::ConfigHandler::GetSharedConfig() != config_) {
+    UpdateSessions(nullptr);
+  }
   return true;
 }
 
