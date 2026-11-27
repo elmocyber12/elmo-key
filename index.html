@@ -325,6 +325,10 @@
             <a class="btn btn-secondary el-label" href="#install">インストールの手順を見る</a>
           </div>
           <p class="el-caption hero-meta" aria-live="polite"><span>Windows 10 / 11（64 ビット）</span><span id="release-version">最新版</span><span id="release-size">約 110 MB</span><span id="release-date" hidden></span></p>
+          <div class="notice notice--info el-caption trial-note" role="note">
+            <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-info"/></svg>
+            <p><strong>試験版（v1.2.2）：</strong>入力中の文章を AI で丁寧語・英語・「だ・である」調・やさしい日本語に書き直す機能を試せます。<a href="https://github.com/elmocyber12/elmo-key/releases/download/v1.2.2/ELMO_key_x64.msi">試験版をダウンロード</a>／<a href="#faq-ai-rewrite" data-open-details>使い方と準備</a>（別に AI のモデル約 2GB が必要です）</p>
+          </div>
           <div class="notice notice--warning el-caption" role="note">
             <svg class="el-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#i-warn"/></svg>
             <p><strong>注意：</strong>Mozkey や Mozc が入っている PC では、先にアンインストールしてください。同じしくみを使っているため、一緒には入れられません。<a href="#uninstall">アンインストールの方法</a></p>
@@ -776,6 +780,17 @@
         }
       })
       .catch(function () { /* 取得できなくてもページはそのまま使える */ });
+  })();
+
+  // よくある質問へのリンク（#faq-…）を開いたときは、その質問を開いて見せる
+  (function () {
+    function openFromHash() {
+      if (!location.hash) return;
+      var target = document.getElementById(location.hash.slice(1));
+      if (target && target.tagName === "DETAILS") target.open = true;
+    }
+    window.addEventListener("hashchange", openFromHash);
+    openFromHash();
   })();
 </script>
 </body>
