@@ -62,6 +62,10 @@ class ElmoAiRewriter {
   // True when a model file exists in one of the search locations.
   static bool HasModel();
 
+  // Appends a diagnostic line (never typed text) to
+  // %USERPROFILE%/AppData/LocalLow/Mozc/elmo_ai_rewrite.log on Windows.
+  static void Log(std::string_view line);
+
   // Exposed for tests.
   static std::string BuildChatRequestJson(ElmoRewriteMode mode,
                                           std::string_view text);

@@ -2405,6 +2405,27 @@ bool Session::SendKey(commands::Command* command) {
   HandleIndirectImeOnOff(command);
 
   bool result = false;
+  {
+    // ELMO_key trial diagnostics: record whether Ctrl+T/E/R/Y reach here.
+    const commands::KeyEvent& k = command->input().key();
+    bool ctrl = false;
+    for (const auto m : k.modifier_keys()) {
+      if (m == commands::KeyEvent::CTRL || m == commands::KeyEvent::LEFT_CTRL ||
+          m == commands::KeyEvent::RIGHT_CTRL) {
+        ctrl = true;
+      }
+    }
+    if (ctrl && k.has_key_code() &&
+        (k.key_code() == 't' || k.key_code() == 'e' || k.key_code() == 'r' ||
+         k.key_code() == 'y')) {
+      ElmoAiRewriter::Log(absl::StrCat(
+          "sendkey ctrl+", std::string(1, static_cast<char>(k.key_code())),
+          " state=", static_cast<int>(context_->state()),
+          " feature=", context_->GetConfig().use_elmo_ai_rewrite() ? 1 : 0,
+          " live=", live_conversion_active_ ? 1 : 0,
+          " phase=", static_cast<int>(elmo_rewrite_phase_)));
+    }
+  }
   if (ElmoAiRewriteInterceptKey(command, &result)) {
     MaybeSetUndoStatus(command);
     return result;
@@ -11608,6 +11629,11 @@ void Session::ElmoAiRewriteOutputPreedit(commands::Command* command,
 bool Session::ElmoAiRewriteStart(commands::Command* command, int mode,
                                  bool from_conversion) {
   const ElmoRewriteMode rewrite_mode = static_cast<ElmoRewriteMode>(mode);
+  ElmoAiRewriter::Log(absl::StrCat(
+      "rewrite start mode=", mode,
+      " feature=", context_->GetConfig().use_elmo_ai_rewrite() ? 1 : 0,
+      " state=", static_cast<int>(context_->state()),
+      " from_conversion=", from_conversion ? 1 : 0));
   if (!context_->GetConfig().use_elmo_ai_rewrite()) {
     // Feature off: keep what these keys did before.
     switch (rewrite_mode) {
@@ -11657,6 +11683,7 @@ bool Session::ElmoAiRewriteStart(commands::Command* command, int mode,
   }
   if (key.empty()) key = value;
   if (value.empty()) {
+    ElmoAiRewriter::Log("rewrite: empty text");
     return DoNothing(command);
   }
 

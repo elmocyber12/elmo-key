@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdio>
 #include <cstdlib>
 #include <cstddef>
 #include <cstdint>
@@ -445,6 +446,47 @@ std::wstring UserProfileFromToken() {
   return ok ? std::wstring(buf) : L"";
 }
 
+std::string WideToUtf8Simple(const std::wstring& w) {
+  if (w.empty()) return "";
+  const int n = ::WideCharToMultiByte(CP_UTF8, 0, w.data(),
+                                      static_cast<int>(w.size()), nullptr, 0,
+                                      nullptr, nullptr);
+  std::string out(n, '\0');
+  ::WideCharToMultiByte(CP_UTF8, 0, w.data(), static_cast<int>(w.size()),
+                        out.data(), n, nullptr, nullptr);
+  return out;
+}
+
+// Diagnostic log for the trial feature (no typed text is written):
+// %USERPROFILE%\AppData\LocalLow\Mozc\elmo_ai_rewrite.log
+void DiagLog(const std::string& line) {
+  static std::mutex mutex;
+  std::lock_guard<std::mutex> lock(mutex);
+  std::wstring profile = UserProfileFromToken();
+  if (profile.empty()) profile = GetEnvW(L"USERPROFILE");
+  if (profile.empty()) return;
+  const std::wstring path = profile + L"\\AppData\\LocalLow\\Mozc\\elmo_ai_rewrite.log";
+  HANDLE file = ::CreateFileW(path.c_str(), FILE_APPEND_DATA,
+                              FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                              OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+  if (file == INVALID_HANDLE_VALUE) return;
+  LARGE_INTEGER size = {};
+  if (::GetFileSizeEx(file, &size) && size.QuadPart > 512 * 1024) {
+    ::CloseHandle(file);
+    return;  // Keep the log small.
+  }
+  SYSTEMTIME t;
+  ::GetLocalTime(&t);
+  char head[64];
+  std::snprintf(head, sizeof(head), "%02d:%02d:%02d pid=%lu ", t.wHour,
+                t.wMinute, t.wSecond, ::GetCurrentProcessId());
+  const std::string text = std::string(head) + line + "\r\n";
+  DWORD written = 0;
+  ::WriteFile(file, text.data(), static_cast<DWORD>(text.size()), &written,
+              nullptr);
+  ::CloseHandle(file);
+}
+
 std::wstring FindModelPath() {
   std::vector<std::wstring> bases;
   const std::wstring profile = UserProfileFromToken();
@@ -457,7 +499,11 @@ std::wstring FindModelPath() {
     const std::wstring dir = base + L"\\ELMO_key\\models\\";
     WIN32_FIND_DATAW data;
     HANDLE find = ::FindFirstFileW((dir + L"*.gguf").c_str(), &data);
-    if (find == INVALID_HANDLE_VALUE) continue;
+    if (find == INVALID_HANDLE_VALUE) {
+      DiagLog("model search miss dir=" + WideToUtf8Simple(dir) +
+              " error=" + std::to_string(::GetLastError()));
+      continue;
+    }
     std::wstring found;
     do {
       if ((data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
@@ -623,9 +669,12 @@ class Engine {
   uint64_t Start(ElmoRewriteMode mode, std::string text, std::string* reason) {
     const std::wstring model = FindModelPath();
     if (model.empty()) {
+      DiagLog("start: no model found");
       *reason = "no_model";
       return 0;
     }
+    DiagLog("start: model=" + WideToUtf8Simple(model) +
+            " chars=" + std::to_string(text.size()));
     const uint64_t id = ++next_id_;
     {
       std::lock_guard<std::mutex> lock(requests_mutex_);
@@ -675,6 +724,7 @@ class Engine {
     int port = 0;
     std::string key;
     if (!EnsureServer(model, &port, &key)) {
+      DiagLog("run: server_start_failed");
       result.status = ElmoRewriteStatus::kFailed;
       result.reason = "server_start_failed";
       return result;
@@ -692,8 +742,11 @@ class Engine {
       result.status = ElmoRewriteStatus::kFailed;
       result.reason = ok ? (status == 200 ? "unusable_answer" : "http_error")
                          : "request_failed";
+      DiagLog("run: failed reason=" + result.reason +
+              " http=" + std::to_string(status));
       return result;
     }
+    DiagLog("run: done");
     result.status = ElmoRewriteStatus::kDone;
     result.value = std::move(answer);
     return result;
@@ -765,9 +818,12 @@ class Engine {
     if (!::CreateProcessW(nullptr, cmd_buf.data(), nullptr, nullptr, FALSE,
                           CREATE_NO_WINDOW | CREATE_SUSPENDED, nullptr,
                           dir.c_str(), &startup, &pi)) {
+      DiagLog("server: CreateProcess failed error=" +
+              std::to_string(::GetLastError()));
       if (job != nullptr) ::CloseHandle(job);
       return false;
     }
+    DiagLog("server: launched pid=" + std::to_string(pi.dwProcessId));
     if (job != nullptr && !::AssignProcessToJobObject(job, pi.hProcess)) {
       ::CloseHandle(job);
       job = nullptr;
@@ -796,9 +852,11 @@ class Engine {
       ::Sleep(300);
     }
     if (!ready) {
+      DiagLog("server: not ready (exited or timeout)");
       StopLocked();
       return false;
     }
+    DiagLog("server: ready");
     StartIdleWatcherLocked();
     *port = port_;
     *key = key_;
@@ -859,7 +917,11 @@ void ElmoAiRewriter::Cancel(uint64_t id) { Engine::Get().Cancel(id); }
 
 bool ElmoAiRewriter::HasModel() { return !FindModelPath().empty(); }
 
+void ElmoAiRewriter::Log(std::string_view line) { DiagLog(std::string(line)); }
+
 #else  // _WIN32
+
+void ElmoAiRewriter::Log(std::string_view) {}
 
 ElmoAiRewriter& ElmoAiRewriter::Get() {
   static ElmoAiRewriter* rewriter = new ElmoAiRewriter();
