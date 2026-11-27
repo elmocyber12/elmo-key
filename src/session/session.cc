@@ -11638,6 +11638,22 @@ bool Session::ElmoAiRewriteStart(commands::Command* command, int mode,
     value = shown.second.empty() ? context_->composer().GetStringForPreedit()
                                  : shown.second;
     if (!shown.first.empty()) key = shown.first;
+    // Pressing Ctrl can drop the live-conversion display, leaving only the
+    // reading.  Convert first so that the AI gets (and the user keeps
+    // seeing) the kanji text, not the bare reading.
+    if (value == context_->composer().GetStringForPreedit()) {
+      commands::Command scratch;
+      *scratch.mutable_input() = command->input();
+      if (Convert(&scratch) && context_->state() == ImeContext::CONVERSION) {
+        commands::Preedit preedit;
+        context_->converter().FillPreedit(context_->composer(), &preedit);
+        std::string converted;
+        for (const commands::Preedit::Segment& segment : preedit.segment()) {
+          converted += segment.value();
+        }
+        if (!converted.empty()) value = std::move(converted);
+      }
+    }
   }
   if (key.empty()) key = value;
   if (value.empty()) {
@@ -11674,9 +11690,18 @@ bool Session::ElmoAiRewritePoll(commands::Command* command) {
   const int32_t expected = static_cast<int32_t>(elmo_rewrite_id_ & 0x7fffffff);
   if (elmo_rewrite_phase_ != ElmoRewritePhase::kPending ||
       command->input().command().id() != expected) {
-    // Stale callback: nothing to change.
-    command->mutable_output()->set_consumed(true);
-    return true;
+    // Stale callback: re-output what is shown now.
+    if (elmo_rewrite_phase_ == ElmoRewritePhase::kShown) {
+      ElmoAiRewriteOutputPreedit(command, elmo_rewrite_value_,
+                                 /*pending=*/false);
+      return true;
+    }
+    if (elmo_rewrite_phase_ == ElmoRewritePhase::kPending) {
+      ElmoAiRewriteOutputPreedit(command, elmo_rewrite_original_,
+                                 /*pending=*/true);
+      return true;
+    }
+    return OutputCurrentLiveConversionAfterZenzStop(command, "");
   }
   const ElmoRewritePollResult r = ElmoAiRewriter::Get().Poll(elmo_rewrite_id_);
   if (r.status == ElmoRewriteStatus::kPending) {
@@ -11714,6 +11739,16 @@ bool Session::ElmoAiRewriteInterceptKey(commands::Command* command,
     return false;
   }
   const commands::KeyEvent& key = command->input().key();
+  // Pressing or releasing only Ctrl/Shift/Alt (e.g. letting go of Ctrl after
+  // Ctrl+T) must not cancel the rewrite.  Keep showing the current state.
+  if (IsPureModifierKeyEvent(key)) {
+    const bool pending = elmo_rewrite_phase_ == ElmoRewritePhase::kPending;
+    ElmoAiRewriteOutputPreedit(
+        command, pending ? elmo_rewrite_original_ : elmo_rewrite_value_,
+        pending);
+    *result = true;
+    return true;
+  }
   if (elmo_rewrite_phase_ == ElmoRewritePhase::kShown &&
       IsPlainSpecialKey(key, commands::KeyEvent::ENTER)) {
     const std::string commit_key = elmo_rewrite_key_;

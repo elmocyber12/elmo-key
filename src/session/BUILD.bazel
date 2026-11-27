@@ -1079,6 +1079,7 @@ mozc_cc_library(
     linkopts = select({
         "@platforms//os:windows": [
             "Advapi32.lib",
+            "Userenv.lib",
             "Ws2_32.lib",
         ],
         "//conditions:default": [],

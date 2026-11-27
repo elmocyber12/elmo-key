@@ -19,6 +19,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
+#include <userenv.h>
 // clang-format on
 
 #include <atomic>
@@ -428,9 +429,30 @@ std::wstring GetEnvW(const wchar_t* name) {
   return std::wstring(buf, n);
 }
 
+// The user's profile folder from the process token.  mozc_server can be
+// started by an application whose environment differs (e.g. an app
+// container where %LOCALAPPDATA% points into a package folder), so the
+// environment variables alone are not reliable.
+std::wstring UserProfileFromToken() {
+  HANDLE token = nullptr;
+  if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token)) {
+    return L"";
+  }
+  wchar_t buf[MAX_PATH];
+  DWORD size = MAX_PATH;
+  const bool ok = ::GetUserProfileDirectoryW(token, buf, &size) != FALSE;
+  ::CloseHandle(token);
+  return ok ? std::wstring(buf) : L"";
+}
+
 std::wstring FindModelPath() {
-  for (const wchar_t* var : {L"LOCALAPPDATA", L"ProgramData"}) {
-    const std::wstring base = GetEnvW(var);
+  std::vector<std::wstring> bases;
+  const std::wstring profile = UserProfileFromToken();
+  if (!profile.empty()) bases.push_back(profile + L"\\AppData\\Local");
+  bases.push_back(GetEnvW(L"LOCALAPPDATA"));
+  bases.push_back(GetEnvW(L"ProgramData"));
+  bases.push_back(L"C:\\ProgramData");
+  for (const std::wstring& base : bases) {
     if (base.empty()) continue;
     const std::wstring dir = base + L"\\ELMO_key\\models\\";
     WIN32_FIND_DATAW data;
