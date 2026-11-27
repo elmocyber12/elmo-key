@@ -360,10 +360,9 @@ ConfigDialog::ConfigDialog()
     ai_layout->addWidget(ai_check);
     const std::wstring local_app_data = [] {
       wchar_t buf[MAX_PATH];
-      const DWORD n = ::GetEnvironmentVariableW(L"USERPROFILE", buf, MAX_PATH);
-      return (n > 0 && n < MAX_PATH)
-                 ? std::wstring(buf, n) + L"\\AppData\\LocalLow"
-                 : std::wstring(L"%USERPROFILE%\\AppData\\LocalLow");
+      const DWORD n = ::GetEnvironmentVariableW(L"ProgramData", buf, MAX_PATH);
+      return (n > 0 && n < MAX_PATH) ? std::wstring(buf, n)
+                                     : std::wstring(L"C:\\ProgramData");
     }();
     auto* ai_note = new QLabel(
         QString::fromUtf8(

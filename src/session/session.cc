@@ -11784,6 +11784,19 @@ bool Session::ElmoAiRewriteInterceptKey(commands::Command* command,
     return false;
   }
   const commands::KeyEvent& key = command->input().key();
+  // While a rewrite is pending, ignore further Ctrl+key presses (e.g. the
+  // auto-repeat of a held Ctrl+T); restarting would pile up requests.
+  if (elmo_rewrite_phase_ == ElmoRewritePhase::kPending) {
+    for (const auto m : key.modifier_keys()) {
+      if (m == commands::KeyEvent::CTRL || m == commands::KeyEvent::LEFT_CTRL ||
+          m == commands::KeyEvent::RIGHT_CTRL) {
+        ElmoAiRewriteOutputPreedit(command, elmo_rewrite_original_,
+                                   /*pending=*/true);
+        *result = true;
+        return true;
+      }
+    }
+  }
   // Pressing or releasing only Ctrl/Shift/Alt (e.g. letting go of Ctrl after
   // Ctrl+T) must not cancel the rewrite.  Keep showing the current state.
   if (IsPureModifierKeyEvent(key)) {

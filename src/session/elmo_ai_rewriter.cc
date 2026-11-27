@@ -489,18 +489,19 @@ void DiagLog(const std::string& line) {
 
 std::wstring FindModelPath() {
   std::vector<std::wstring> bases;
+  // ProgramData first.  When mozc_server is started by a packaged app (e.g.
+  // the Windows 11 Notepad), the user's AppData folders created by the user
+  // are not visible to it (seen on a real PC as ERROR_PATH_NOT_FOUND for both
+  // AppData\Local\ELMO_key and AppData\LocalLow\ELMO_key), while ProgramData
+  // is.  AppData locations remain as fallbacks for older setups.
+  bases.push_back(GetEnvW(L"ProgramData"));
+  bases.push_back(L"C:\\ProgramData");
   const std::wstring profile = UserProfileFromToken();
-  // LocalLow first: when mozc_server is started by a packaged app (e.g. the
-  // Windows 11 Notepad), AppData\Local is virtualized and the user's real
-  // folder is not visible (seen as ERROR_PATH_NOT_FOUND), while LocalLow,
-  // where Mozc keeps its own data, is.
   if (!profile.empty()) {
     bases.push_back(profile + L"\\AppData\\LocalLow");
     bases.push_back(profile + L"\\AppData\\Local");
   }
   bases.push_back(GetEnvW(L"LOCALAPPDATA"));
-  bases.push_back(GetEnvW(L"ProgramData"));
-  bases.push_back(L"C:\\ProgramData");
   for (const std::wstring& base : bases) {
     if (base.empty()) continue;
     const std::wstring dir = base + L"\\ELMO_key\\models\\";
@@ -674,6 +675,11 @@ class Engine {
   }
 
   uint64_t Start(ElmoRewriteMode mode, std::string text, std::string* reason) {
+    if (active_.load() >= 2) {
+      DiagLog("start: busy");
+      *reason = "busy";
+      return 0;
+    }
     const std::wstring model = FindModelPath();
     if (model.empty()) {
       DiagLog("start: no model found");
